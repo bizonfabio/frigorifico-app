@@ -1,0 +1,98 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Classificar Animal - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Classificação do Animal</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Número do Brinco:</strong> {{ animal.numero_brinco }}</p>
+                        <p><strong>Produtor:</strong> {{ animal.nome_produtor }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Sexo:</strong> 
+                            {% if animal.sexo == 'macho' %}
+                                Macho
+                            {% else %}
+                                Fêmea
+                            {% endif %}
+                        </p>
+                        <p><strong>Data de Abate:</strong> {{ animal.data_abate|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo_animal" class="form-label">Tipo do Animal:</label>
+                                <select class="form-select" id="tipo_animal" name="tipo_animal" required>
+                                    <option value="">Selecione o tipo</option>
+                                    {% for valor, descricao in tipo_animal_choices %}
+                                        <option value="{{ valor }}" {% if animal.tipo_animal == valor %}selected{% endif %}>
+                                            {{ descricao }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="qualidade" class="form-label">Qualidade:</label>
+                                <select class="form-select" id="qualidade" name="qualidade" required>
+                                    <option value="">Selecione a qualidade</option>
+                                    {% for valor, descricao in qualidade_choices %}
+                                        <option value="{{ valor }}" {% if animal.qualidade == valor %}selected{% endif %}>
+                                            {{ descricao }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="peso" class="form-label">Peso (kg):</label>
+                        <input type="text" class="form-control" id="peso" name="peso" value="{{ animal.peso|default:"" }}" placeholder="Ex: 150.50">
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'lista_animais_para_classificacao' %}" class="btn btn-secondary">Voltar</a>
+                        <button type="submit" class="btn btn-success">Salvar Classificação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Critérios de Classificação</h5>
+                <p><strong>Tipos de Animais:</strong></p>
+                <ul>
+                    <li><strong>Vaca:</strong> Fêmea adulta que já teve cria</li>
+                    <li><strong>Boi:</strong> Macho castrado adulto</li>
+                    <li><strong>Touro:</strong> Macho inteiro adulto</li>
+                    <li><strong>Novilha:</strong> Fêmea jovem que ainda não teve cria</li>
+                </ul>
+                
+                <p><strong>Qualidades:</strong></p>
+                <ul>
+                    <li><strong>Desossa:</strong> Animal muito magro</li>
+                    <li><strong>Fraca:</strong> Baixa condição corporal</li>
+                    <li><strong>Média:</strong> Condição corporal adequada</li>
+                    <li><strong>Boa:</strong> Alta condição corporal</li>
+                    <li><strong>Condenada:</strong> Animal com problemas que impedem a comercialização</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

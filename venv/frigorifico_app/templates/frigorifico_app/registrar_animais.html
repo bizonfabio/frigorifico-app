@@ -1,0 +1,90 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Registro de Animais - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Registro de Animais</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>GTA:</strong> {{ gta }} | 
+                    <strong>Quantidade de Animais:</strong> {{ quantidade }}
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Importante:</strong> Cada animal deve ter um número de brinco único. 
+                    O sistema não permitirá o registro se houver números de brinco duplicados.
+                </div>
+                
+                {% if brincos_existentes %}
+                <div class="alert alert-danger">
+                    <strong>Erro:</strong> Os seguintes números de brinco já existem no sistema:
+                    <ul>
+                        {% for brinco in brincos_existentes %}
+                        <li>Brinco: {{ brinco }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for i in range_quantidade %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Animal #{{ forloop.counter }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="numero_brinco_{{ i }}" class="form-label">Número do Brinco:</label>
+                                        <input type="text" class="form-control" id="numero_brinco_{{ i }}" name="numero_brinco_{{ i }}" required>
+                                        <div class="form-text">Este número deve ser único para cada animal</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nome_produtor_{{ i }}" class="form-label">Nome do Produtor:</label>
+                                        <input type="text" class="form-control" id="nome_produtor_{{ i }}" name="nome_produtor_{{ i }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="sexo_{{ i }}" class="form-label">Sexo:</label>
+                                        <select class="form-select" id="sexo_{{ i }}" name="sexo_{{ i }}" required>
+                                            <option value="">Selecione</option>
+                                            <option value="macho">Macho</option>
+                                            <option value="femea">Fêmea</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="data_abate_{{ i }}" class="form-label">Data de Abate:</label>
+                                        <input type="date" class="form-control" id="data_abate_{{ i }}" name="data_abate_{{ i }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'registro_inicial' %}" class="btn btn-secondary">Voltar</a>
+                        <button type="submit" class="btn btn-success">Registrar Animais</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

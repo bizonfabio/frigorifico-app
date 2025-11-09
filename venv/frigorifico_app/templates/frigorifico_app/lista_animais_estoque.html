@@ -1,0 +1,72 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Lista de Animais para Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Lista de Animais para Envio ao Estoque</h2>
+            </div>
+            <div class="card-body">
+                {% if animais %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Número do Brinco</th>
+                                <th>Produtor</th>
+                                <th>Tipo</th>
+                                <th>Qualidade</th>
+                                <th>Peso (kg)</th>
+                                <th>Data de Classificação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for animal in animais %}
+                            <tr>
+                                <td>{{ animal.numero_brinco }}</td>
+                                <td>{{ animal.nome_produtor }}</td>
+                                <td>
+                                    {% if animal.tipo_animal %}
+                                        <span class="badge bg-info">{{ animal.get_tipo_animal_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Não Classificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if animal.qualidade %}
+                                        <span class="badge bg-warning text-dark">{{ animal.get_qualidade_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Não Classificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ animal.peso|default:"-" }}</td>
+                                <td>{{ animal.data_classificacao|date:"d/m/Y H:i"|default:"-" }}</td>
+                                <td>
+                                    {% if animal.tipo_animal and animal.qualidade %}
+                                        <a href="{% url 'enviar_para_estoque' animal.id %}" class="btn btn-sm btn-primary">
+                                            Enviar para Estoque
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Classifique primeiro</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <h4 class="alert-heading">Nenhum animal para enviar ao estoque</h4>
+                    <p>Não há animais classificados aguardando envio para o estoque no momento.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

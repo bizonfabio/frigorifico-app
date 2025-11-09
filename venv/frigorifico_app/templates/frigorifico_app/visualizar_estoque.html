@@ -1,0 +1,62 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Visualizar Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Estoque da Câmara Fria</h2>
+            </div>
+            <div class="card-body">
+                {% if meias_carcaças %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Trilho</th>
+                                <th>Gancho</th>
+                                <th>Número do Brinco</th>
+                                <th>Produtor</th>
+                                <th>Lado da Carcaça</th>
+                                <th>Tipo</th>
+                                <th>Qualidade</th>
+                                <th>Peso (kg)</th>
+                                <th>Data de Entrada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for meia in meias_carcaças %}
+                            <tr>
+                                <td>{{ meia.posicao_trilho }}</td>
+                                <td>{{ meia.posicao_gancho }}</td>
+                                <td>{{ meia.bovino.numero_brinco }}</td>
+                                <td>{{ meia.bovino.nome_produtor }}</td>
+                                <td>
+                                    {% if meia.lado == 'esquerda' %}
+                                        <span class="badge bg-primary">Esquerda</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Direita</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ meia.bovino.get_tipo_animal_display }}</td>
+                                <td>{{ meia.bovino.get_qualidade_display }}</td>
+                                <td>{{ meia.peso|floatformat:2 }}</td>
+                                <td>{{ meia.data_entrada_estoque|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <h4 class="alert-heading">Estoque vazio</h4>
+                    <p>Não há meias carcaças armazenadas na câmara fria no momento.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

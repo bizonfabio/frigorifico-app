@@ -1,0 +1,82 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Enviar Animal para Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Envio para Estoque</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Número do Brinco:</strong> {{ animal.numero_brinco }}</p>
+                        <p><strong>Produtor:</strong> {{ animal.nome_produtor }}</p>
+                        <p><strong>Tipo:</strong> {{ animal.get_tipo_animal_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Qualidade:</strong> {{ animal.get_qualidade_display }}</p>
+                        <p><strong>Peso Total:</strong> {{ animal.peso }} kg</p>
+                        <p><strong>Peso por Meia Carcaça:</strong> {% if animal.peso %}{{ animal.peso|floatformat:2 }} kg{% else %}-{% endif %}</p>
+                        <p><strong>Data de Classificação:</strong> {{ animal.data_classificacao|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5>Informação Importante</h5>
+                    <p>Cada animal será dividido em duas meias carcaças que serão armazenadas na câmara fria:</p>
+                    <ul>
+                        <li><strong>Meia carcaça esquerda</strong> - Ocupará um gancho</li>
+                        <li><strong>Meia carcaça direita</strong> - Ocupará o gancho seguinte</li>
+                        {% if animal.peso %}
+                        {% widthratio animal.peso 2 1 as peso_meia %}
+                        <li><strong>Peso de cada meia carcaça:</strong> Aproximadamente {{ peso_meia|floatformat:2 }} kg</li>
+                        {% endif %}
+                    </ul>
+                    <p>Informe o trilho e o número do primeiro gancho disponível para armazenar as meias carcaças.</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="trilho" class="form-label">Trilho:</label>
+                                <input type="number" class="form-control" id="trilho" name="trilho" min="1" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="gancho_inicio" class="form-label">Primeiro Gancho Disponível:</label>
+                                <input type="number" class="form-control" id="gancho_inicio" name="gancho_inicio" min="1" value="1" required>
+                                <div class="form-text">As meias carcaças ocuparão este gancho e o seguinte</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'lista_animais_para_estoque' %}" class="btn btn-secondary">Voltar</a>
+                        <button type="submit" class="btn btn-success">Enviar para Estoque</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Organização da Câmara Fria</h5>
+                <p>A câmara fria é organizada em trilhos com ganchos numerados:</p>
+                <ul>
+                    <li>Cada trilho contém vários ganchos numerados sequencialmente</li>
+                    <li>Cada meia carcaça ocupa um gancho</li>
+                    <li>As duas meias carcaças de um mesmo animal devem ser armazenadas no mesmo trilho</li>
+                    <li>Registre a posição exata de cada meia carcaça para facilitar a localização posterior</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
