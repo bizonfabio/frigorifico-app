@@ -160,6 +160,7 @@ def avaliar_animal(request, id):
     
     # Definir as opções para cada parte do animal
     opcoes = {
+        # Vísceras Vermelhas (já existentes)
         'condicao_geral': Bovino.CONDICAO_GERAL_CHOICES,
         'carcassa': Bovino.CARCASSA_CHOICES,
         'figado': Bovino.FIGADO_CHOICES,
@@ -169,10 +170,15 @@ def avaliar_animal(request, id):
         'diafragma': Bovino.DIAFRAGMA_CHOICES,
         'lingua': Bovino.LINGUA_CHOICES,
         'cabeca': Bovino.CABECA_CHOICES,
+        # Vísceras Brancas (novas)
+        'utero': Bovino.UTERO_CHOICES,
+        'baco_pancreas': Bovino.BAÇO_PANCREAS_CHOICES,
+        'intestino_estomagos_bexiga': Bovino.INTESTINO_ESTOMAGOS_BEXIGA_CHOICES,
+        'glandula_mamaria': Bovino.GLANDULA_MAMARIA_CHOICES,
     }
     
     if request.method == 'POST':
-        # Salvar avaliação detalhada
+        # Salvar avaliação detalhada - Vísceras Vermelhas
         animal.condicao_geral = request.POST.get('condicao_geral')
         animal.carcassa = request.POST.get('carcassa')
         animal.figado = request.POST.get('figado')
@@ -182,14 +188,25 @@ def avaliar_animal(request, id):
         animal.diafragma = request.POST.get('diafragma')
         animal.lingua = request.POST.get('lingua')
         animal.cabeca = request.POST.get('cabeca')
+        
+        # Salvar avaliação detalhada - Vísceras Brancas
+        animal.utero = request.POST.get('utero')
+        animal.baco_pancreas = request.POST.get('baco_pancreas')
+        animal.intestino_estomagos_bexiga = request.POST.get('intestino_estomagos_bexiga')
+        animal.glandula_mamaria = request.POST.get('glandula_mamaria')
+        
         animal.observacoes_avaliacao = request.POST.get('observacoes_avaliacao')
         
         # Determinar status da avaliação com base nas seleções
         # Se alguma parte tiver uma condição diferente de "Aprovado", o animal é inapto
-        partes = [animal.condicao_geral, animal.carcassa, animal.figado, animal.coracao,
-                  animal.pulmoes, animal.rins, animal.diafragma, animal.lingua, animal.cabeca]
+        partes_vermelhas = [animal.condicao_geral, animal.carcassa, animal.figado, animal.coracao,
+                            animal.pulmoes, animal.rins, animal.diafragma, animal.lingua, animal.cabeca]
         
-        if any(parte and parte != "Aprovado" for parte in partes):
+        partes_brancas = [animal.utero, animal.baco_pancreas, animal.intestino_estomagos_bexiga, 
+                          animal.glandula_mamaria]
+        
+        # Verificar se alguma parte (vermelha ou branca) foi condenada
+        if any(parte and parte != "Aprovado" for parte in partes_vermelhas + partes_brancas):
             animal.status_avaliacao = 'inapto'
         else:
             animal.status_avaliacao = 'apto'

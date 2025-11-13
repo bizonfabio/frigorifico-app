@@ -30,138 +30,242 @@
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="condicao_geral" class="form-label">Condição Geral:</label>
-                                <select class="form-select" id="condicao_geral" name="condicao_geral">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.condicao_geral %}
-                                        <option value="{{ valor }}" {% if animal.condicao_geral == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="carcassa" class="form-label">Carcassa:</label>
-                                <select class="form-select" id="carcassa" name="carcassa">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.carcassa %}
-                                        <option value="{{ valor }}" {% if animal.carcassa == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                    <!-- Seletor de tipo de avaliação -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Tipo de Avaliação</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tipoAvaliacao" id="viscerasVermelhas" value="vermelhas" checked>
+                                        <label class="form-check-label" for="viscerasVermelhas">Vísceras Vermelhas</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tipoAvaliacao" id="viscerasBrancas" value="brancas">
+                                        <label class="form-check-label" for="viscerasBrancas">Vísceras Brancas</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="figado" class="form-label">Fígado:</label>
-                                <select class="form-select" id="figado" name="figado">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.figado %}
-                                        <option value="{{ valor }}" {% if animal.figado == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                    <!-- Seção de Vísceras Vermelhas -->
+                    <div id="secaoVermelhas">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-danger">
+                                    <h5 class="mb-0">Vísceras Vermelhas</h5>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="coracao" class="form-label">Coração:</label>
-                                <select class="form-select" id="coracao" name="coracao">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.coracao %}
-                                        <option value="{{ valor }}" {% if animal.coracao == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="condicao_geral" class="form-label">Condição Geral:</label>
+                                    <select class="form-select" id="condicao_geral" name="condicao_geral">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.condicao_geral %}
+                                            <option value="{{ valor }}" {% if animal.condicao_geral == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="carcassa" class="form-label">Carcassa:</label>
+                                    <select class="form-select" id="carcassa" name="carcassa">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.carcassa %}
+                                            <option value="{{ valor }}" {% if animal.carcassa == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="figado" class="form-label">Fígado:</label>
+                                    <select class="form-select" id="figado" name="figado">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.figado %}
+                                            <option value="{{ valor }}" {% if animal.figado == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="coracao" class="form-label">Coração:</label>
+                                    <select class="form-select" id="coracao" name="coracao">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.coracao %}
+                                            <option value="{{ valor }}" {% if animal.coracao == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pulmoes" class="form-label">Pulmões:</label>
+                                    <select class="form-select" id="pulmoes" name="pulmoes">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.pulmoes %}
+                                            <option value="{{ valor }}" {% if animal.pulmoes == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rins" class="form-label">Rins:</label>
+                                    <select class="form-select" id="rins" name="rins">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.rins %}
+                                            <option value="{{ valor }}" {% if animal.rins == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="diafragma" class="form-label">Diafragma:</label>
+                                    <select class="form-select" id="diafragma" name="diafragma">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.diafragma %}
+                                            <option value="{{ valor }}" {% if animal.diafragma == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lingua" class="form-label">Língua:</label>
+                                    <select class="form-select" id="lingua" name="lingua">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.lingua %}
+                                            <option value="{{ valor }}" {% if animal.lingua == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cabeca" class="form-label">Cabeça:</label>
+                                    <select class="form-select" id="cabeca" name="cabeca">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.cabeca %}
+                                            <option value="{{ valor }}" {% if animal.cabeca == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="pulmoes" class="form-label">Pulmões:</label>
-                                <select class="form-select" id="pulmoes" name="pulmoes">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.pulmoes %}
-                                        <option value="{{ valor }}" {% if animal.pulmoes == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                    <!-- Seção de Vísceras Brancas -->
+                    <div id="secaoBrancas" style="display: none;">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-light border">
+                                    <h5 class="mb-0">Vísceras Brancas</h5>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="rins" class="form-label">Rins:</label>
-                                <select class="form-select" id="rins" name="rins">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.rins %}
-                                        <option value="{{ valor }}" {% if animal.rins == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="utero" class="form-label">Útero:</label>
+                                    <select class="form-select" id="utero" name="utero">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.utero %}
+                                            <option value="{{ valor }}" {% if animal.utero == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                                {% if valor == "Prenha" %}<strong>(Destacar caso esteja prenha)</strong>{% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="diafragma" class="form-label">Diafragma:</label>
-                                <select class="form-select" id="diafragma" name="diafragma">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.diafragma %}
-                                        <option value="{{ valor }}" {% if animal.diafragma == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="baco_pancreas" class="form-label">Baço/Pancreas:</label>
+                                    <select class="form-select" id="baco_pancreas" name="baco_pancreas">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.baco_pancreas %}
+                                            <option value="{{ valor }}" {% if animal.baco_pancreas == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="lingua" class="form-label">Língua:</label>
-                                <select class="form-select" id="lingua" name="lingua">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.lingua %}
-                                        <option value="{{ valor }}" {% if animal.lingua == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="intestino_estomagos_bexiga" class="form-label">Intestino/Estômagos/Bexiga:</label>
+                                    <select class="form-select" id="intestino_estomagos_bexiga" name="intestino_estomagos_bexiga">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.intestino_estomagos_bexiga %}
+                                            <option value="{{ valor }}" {% if animal.intestino_estomagos_bexiga == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="cabeca" class="form-label">Cabeça:</label>
-                                <select class="form-select" id="cabeca" name="cabeca">
-                                    <option value="">Selecione</option>
-                                    {% for valor, descricao in opcoes.cabeca %}
-                                        <option value="{{ valor }}" {% if animal.cabeca == valor %}selected{% endif %}>
-                                            {{ descricao }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="glandula_mamaria" class="form-label">Glândula Mamária:</label>
+                                    <select class="form-select" id="glandula_mamaria" name="glandula_mamaria">
+                                        <option value="">Selecione</option>
+                                        {% for valor, descricao in opcoes.glandula_mamaria %}
+                                            <option value="{{ valor }}" {% if animal.glandula_mamaria == valor %}selected{% endif %}>
+                                                {{ descricao }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -183,8 +287,34 @@
             <div class="card-body">
                 <h5 class="card-title">Critérios de Avaliação</h5>
                 <p>Selecione uma condição para cada parte do animal. O animal será considerado <strong>INAPTO</strong> se qualquer parte tiver uma condição diferente de "Aprovado".</p>
+                <p><strong>Vísceras Vermelhas:</strong> Órgãos com coloração avermelhada (fígado, coração, pulmões, rins, etc.)</p>
+                <p><strong>Vísceras Brancas:</strong> Órgãos com coloração esbranquiçada (baço, pâncreas, intestinos, útero, glândulas, etc.)</p>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Função para alternar entre as seções de avaliação
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioVermelhas = document.getElementById('viscerasVermelhas');
+        const radioBrancas = document.getElementById('viscerasBrancas');
+        const secaoVermelhas = document.getElementById('secaoVermelhas');
+        const secaoBrancas = document.getElementById('secaoBrancas');
+        
+        radioVermelhas.addEventListener('change', function() {
+            if (this.checked) {
+                secaoVermelhas.style.display = 'block';
+                secaoBrancas.style.display = 'none';
+            }
+        });
+        
+        radioBrancas.addEventListener('change', function() {
+            if (this.checked) {
+                secaoVermelhas.style.display = 'none';
+                secaoBrancas.style.display = 'block';
+            }
+        });
+    });
+</script>
 {% endblock %}

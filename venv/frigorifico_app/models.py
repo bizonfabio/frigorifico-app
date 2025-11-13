@@ -42,7 +42,7 @@ class Bovino(models.Model):
         verbose_name="Data da Avaliação"
     )
     
-    # Campos para avaliação detalhada
+    # Campos para avaliação detalhada - Vísceras Vermelhas (já existentes)
     CONDICAO_GERAL_CHOICES = [
         ("Condenação Total", "Condenação Total"),
         ("Condenação Parcial", "Condenação Parcial"),
@@ -146,7 +146,46 @@ class Bovino(models.Model):
         ("Aprovado", "Aprovado")
     ]
     
-    # Campos de avaliação detalhada
+    # Campos para avaliação detalhada - Vísceras Brancas (novos)
+    UTERO_CHOICES = [
+        ("Gestação Adiantada", "Gestação Adiantada"),
+        ("Metrite", "Metrite"),
+        ("Abscesso", "Abscesso"),
+        ("Prenha", "Prenha"),
+        ("Aprovado", "Aprovado")
+    ]
+    
+    BAÇO_PANCREAS_CHOICES = [
+        ("Abscesso", "Abscesso"),
+        ("Aspecto repugnante", "Aspecto repugnante"),
+        ("Esplenomegalia", "Esplenomegalia"),
+        ("Euritrema", "Euritrema"),
+        ("Aderencia", "Aderencia"),
+        ("Aprovado", "Aprovado")
+    ]
+    
+    INTESTINO_ESTOMAGOS_BEXIGA_CHOICES = [
+        ("Abscessos", "Abscessos"),
+        ("Enterite", "Enterite"),
+        ("Peritonite", "Peritonite"),
+        ("Tuberculose (Lesão Sugestiva)", "Tuberculose (Lesão Sugestiva)"),
+        ("Linfadenite", "Linfadenite"),
+        ("Adenite", "Adenite"),
+        ("Parasitoses transmissiveis", "Parasitoses transmissiveis"),
+        ("Esofagostomose", "Esofagostomose"),
+        ("Neoplasia", "Neoplasia"),
+        ("Aprovado", "Aprovado")
+    ]
+    
+    GLANDULA_MAMARIA_CHOICES = [
+        ("Adenite", "Adenite"),
+        ("Mastite", "Mastite"),
+        ("Miiase", "Miiase"),
+        ("Aspecto repugante", "Aspecto repugante"),
+        ("Aprovado", "Aprovado")
+    ]
+    
+    # Campos de avaliação detalhada - Vísceras Vermelhas (já existentes)
     condicao_geral = models.CharField(
         max_length=50,
         choices=CONDICAO_GERAL_CHOICES,
@@ -217,6 +256,39 @@ class Bovino(models.Model):
         blank=True,
         null=True,
         verbose_name="Cabeça"
+    )
+    
+    # Campos de avaliação detalhada - Vísceras Brancas (novos)
+    utero = models.CharField(
+        max_length=50,
+        choices=UTERO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Útero"
+    )
+    
+    baco_pancreas = models.CharField(
+        max_length=50,
+        choices=BAÇO_PANCREAS_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Baço/Pancreas"
+    )
+    
+    intestino_estomagos_bexiga = models.CharField(
+        max_length=50,
+        choices=INTESTINO_ESTOMAGOS_BEXIGA_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Intestino/Estômagos/Bexiga"
+    )
+    
+    glandula_mamaria = models.CharField(
+        max_length=50,
+        choices=GLANDULA_MAMARIA_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Glândula Mamária"
     )
     
     # Campos para classificação
