@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 from django.utils import timezone
+from django.http import JsonResponse
 from .models import Bovino, MeiaCarcaça
 from datetime import date
+import json
 
 def home(request):
     # Se for POST, significa que o usuário selecionou uma data
@@ -11,15 +13,15 @@ def home(request):
         data_selecionada = request.POST.get('data_selecionada')
         if data_selecionada:
             # Filtrar animais pela data selecionada
-            animais = Bovino.objects.filter(data_abate=data_selecionada)
+            animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
         else:
             # Se não houver data, mostrar todos os animais
-            animais = Bovino.objects.all()
+            animais = Bovino.objects.all().order_by('data_abate', 'ordem_abate')
             data_selecionada = "Todos"
     else:
         # Por padrão, mostrar animais com data de hoje
         data_selecionada = date.today()
-        animais = Bovino.objects.filter(data_abate=data_selecionada)
+        animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
     
     # Contar total de animais
     total_animais = animais.count()
@@ -57,74 +59,80 @@ def registrar_animais(request):
             messages.error(request, 'Dados inválidos. Por favor, comece novamente.')
             return redirect('registro_inicial')
         
-        # Coletar todos os dados dos animais
-        animais_data = []
-        brincos_existentes = []
+        # Lista para armazenar animais que deram erro
+        animais_com_erro = []
+        animais_registrados = 0
+        data_abate_referencia = None
         
-        # Verificar se há brincos já existentes no banco de dados
+        # Processar cada animal
         for i in range(quantidade):
             numero_brinco = request.POST.get(f'numero_brinco_{i}')
+            nome_produtor = request.POST.get(f'nome_produtor_{i}')
+            sexo = request.POST.get(f'sexo_{i}')
+            data_abate = request.POST.get(f'data_abate_{i}')
             
-            # Verificar se o brinco já existe no banco de dados
-            if Bovino.objects.filter(numero_brinco=numero_brinco).exists():
-                if numero_brinco not in brincos_existentes:
-                    brincos_existentes.append(numero_brinco)
+            # Guardar a data de abate do primeiro animal como referência
+            if i == 0:
+                data_abate_referencia = data_abate
             
-            # Coletar dados do animal
-            animais_data.append({
-                'numero_brinco': numero_brinco,
-                'nome_produtor': request.POST.get(f'nome_produtor_{i}'),
-                'sexo': request.POST.get(f'sexo_{i}'),
-                'data_abate': request.POST.get(f'data_abate_{i}'),
-            })
+            # Criar instância do modelo Bovino
+            bovino = Bovino(
+                numero_brinco=numero_brinco,
+                nome_produtor=nome_produtor,
+                sexo=sexo,
+                data_abate=data_abate,
+                gta=gta
+            )
+            
+            try:
+                bovino.save()
+                animais_registrados += 1
+            except IntegrityError:
+                # Se houver erro de integridade (brinco duplicado), adicionar à lista de erros
+                animais_com_erro.append({
+                    'numero': i + 1,
+                    'brinco': numero_brinco
+                })
         
-        # Se houver brincos já existentes no banco, não registrar nenhum
-        if brincos_existentes:
-            contexto = {
-                'gta': gta,
-                'quantidade': quantidade,
-                'range_quantidade': range(quantidade),
-                'animais_data': animais_data,
-                'brincos_existentes': brincos_existentes
-            }
+        # Definir ordem de abate para os animais registrados na mesma data
+        if animais_registrados > 0 and data_abate_referencia:
+            # Obter o maior valor de ordem_abate existente para essa data
+            max_ordem = Bovino.objects.filter(data_abate=data_abate_referencia).aggregate(
+                models.Max('ordem_abate')
+            )['ordem_abate__max'] or 0
             
-            messages.error(request, 'Não foi possível registrar os animais. Verifique os números dos brincos.')
-            return render(request, 'frigorifico_app/registrar_animais.html', contexto)
+            # Definir a ordem de abate para os animais recém-registrados
+            novos_animais = Bovino.objects.filter(
+                data_abate=data_abate_referencia,
+                ordem_abate__isnull=True
+            ).order_by('id')
+            
+            for i, animal in enumerate(novos_animais):
+                animal.ordem_abate = max_ordem + i + 1
+                animal.save()
         
-        # Registrar todos os animais se não houver conflitos
-        try:
-            for animal_data in animais_data:
-                Bovino.objects.create(
-                    numero_brinco=animal_data['numero_brinco'],
-                    nome_produtor=animal_data['nome_produtor'],
-                    sexo=animal_data['sexo'],
-                    data_abate=animal_data['data_abate'],
-                    gta=gta
-                )
-            
-            # Limpar a sessão
-            request.session.flush()
-            
-            # Preparar dados para a página de sucesso
-            contexto = {
-                'gta': gta,
-                'quantidade': quantidade
-            }
-            
-            messages.success(request, f'{quantidade} animal(is) registrado(s) com sucesso!')
-            return render(request, 'frigorifico_app/sucesso.html', contexto)
-            
-        except IntegrityError:
-            # Em caso de erro inesperado, mostrar mensagem de erro
-            contexto = {
-                'gta': gta,
-                'quantidade': quantidade,
-                'range_quantidade': range(quantidade),
-                'animais_data': animais_data
-            }
-            
-            messages.error(request, 'Erro ao registrar animais. Por favor, tente novamente.')
-            return render(request, 'frigorifico_app/registrar_animais.html', contexto)
+        # Limpar a sessão
+        request.session.flush()
+        
+        # Mostrar mensagens apropriadas
+        if animais_registrados > 0:
+            messages.success(request, f'{animais_registrados} animal(is) registrado(s) com sucesso!')
+        
+        if animais_com_erro:
+            mensagem_erro = "Os seguintes animais não foram registrados devido a número de brinco duplicado: "
+            for erro in animais_com_erro:
+                mensagem_erro += f"Animal {erro['numero']} (Brinco: {erro['brinco']}) "
+            messages.error(request, mensagem_erro)
+        
+        # Preparar dados para a página de sucesso
+        contexto = {
+            'gta': gta,
+            'quantidade': animais_registrados,
+            'erros': animais_com_erro
+        }
+        
+        # Renderizar a página de sucesso
+        return render(request, 'frigorifico_app/sucesso.html', contexto)
     
     # Método GET - mostrar formulário
     gta = request.session.get('gta', '')
@@ -146,8 +154,8 @@ def registro_inicial(request):
     return render(request, 'frigorifico_app/registro_inicial.html')
 
 def lista_animais_para_avaliacao(request):
-    # Mostrar apenas animais que ainda não foram avaliados
-    animais = Bovino.objects.filter(status_avaliacao='nao_avaliado')
+    # Mostrar apenas animais que ainda não foram avaliados, ordenados pela ordem de abate
+    animais = Bovino.objects.filter(status_avaliacao='nao_avaliado').order_by('data_abate', 'ordem_abate')
     
     contexto = {
         'animais': animais
@@ -225,8 +233,8 @@ def avaliar_animal(request, id):
     return render(request, 'frigorifico_app/avaliar_animal.html', contexto)
 
 def lista_animais_para_classificacao(request):
-    # Mostrar apenas animais que foram avaliados como aptos
-    animais = Bovino.objects.filter(status_avaliacao='apto', tipo_animal__isnull=True)
+    # Mostrar apenas animais que foram avaliados como aptos, ordenados pela ordem de abate
+    animais = Bovino.objects.filter(status_avaliacao='apto', tipo_animal__isnull=True).order_by('data_abate', 'ordem_abate')
     
     contexto = {
         'animais': animais
@@ -246,20 +254,6 @@ def classificar_animal(request, id):
         # Salvar dados de classificação
         animal.tipo_animal = request.POST.get('tipo_animal')
         animal.qualidade = request.POST.get('qualidade')
-        peso_str = request.POST.get('peso')
-        
-        # Converter peso para decimal
-        if peso_str:
-            try:
-                animal.peso = float(peso_str.replace(',', '.'))
-            except ValueError:
-                messages.error(request, 'Peso inválido. Use apenas números.')
-                contexto = {
-                    'animal': animal,
-                    'tipo_animal_choices': Bovino.TIPO_ANIMAL_CHOICES,
-                    'qualidade_choices': Bovino.QUALIDADE_CHOICES
-                }
-                return render(request, 'frigorifico_app/classificar_animal.html', contexto)
         
         animal.data_classificacao = timezone.now()
         animal.save()
@@ -276,12 +270,12 @@ def classificar_animal(request, id):
     return render(request, 'frigorifico_app/classificar_animal.html', contexto)
 
 def lista_animais_para_estoque(request):
-    # Mostrar apenas animais que foram classificados e ainda não estão no estoque
+    # Mostrar apenas animais que foram classificados e ainda não estão no estoque, ordenados pela ordem de abate
     animais = Bovino.objects.filter(
         status_avaliacao='apto',
         tipo_animal__isnull=False,
         meiacarcaça__isnull=True
-    ).distinct()
+    ).distinct().order_by('data_abate', 'ordem_abate')
     
     contexto = {
         'animais': animais
@@ -300,35 +294,77 @@ def enviar_para_estoque(request, id):
     if request.method == 'POST':
         # Obter dados do formulário
         trilho = request.POST.get('trilho')
-        gancho_inicio = int(request.POST.get('gancho_inicio', 1))
+        gancho_inicio_str = request.POST.get('gancho_inicio')
+        peso_str = request.POST.get('peso')
         
-        # Calcular peso de cada meia carcaça (50% do peso total do animal)
-        peso_meia = None
-        if animal.peso:
-            peso_meia = animal.peso / 2
+        # Validar campos obrigatórios
+        if not trilho or not gancho_inicio_str or not peso_str:
+            messages.error(request, 'Todos os campos são obrigatórios.')
+            contexto = {
+                'animal': animal
+            }
+            return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
         
-        # Criar meia carcaça esquerda
-        MeiaCarcaça.objects.create(
-            bovino=animal,
-            lado='esquerda',
-            posicao_trilho=trilho,
-            posicao_gancho=gancho_inicio,
-            peso=peso_meia,
-            data_entrada_estoque=timezone.now()
-        )
-        
-        # Criar meia carcaça direita
-        MeiaCarcaça.objects.create(
-            bovino=animal,
-            lado='direita',
-            posicao_trilho=trilho,
-            posicao_gancho=gancho_inicio + 1,
-            peso=peso_meia,
-            data_entrada_estoque=timezone.now()
-        )
-        
-        messages.success(request, f'Animal {animal.numero_brinco} enviado para o estoque com sucesso!')
-        return redirect('lista_animais_para_estoque')
+        try:
+            gancho_inicio = int(gancho_inicio_str)
+            peso = float(peso_str.replace(',', '.'))
+            
+            # Validar peso positivo
+            if peso <= 0:
+                messages.error(request, 'O peso deve ser um valor positivo.')
+                contexto = {
+                    'animal': animal
+                }
+                return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
+            
+            # Calcular peso de cada meia carcaça (50% do peso total do animal)
+            peso_meia = peso / 2
+            
+            # Criar meia carcaça esquerda
+            meia_esquerda = MeiaCarcaça(
+                bovino=animal,
+                lado='esquerda',
+                posicao_trilho=trilho,
+                posicao_gancho=gancho_inicio,
+                peso=peso_meia,
+                data_entrada_estoque=timezone.now()
+            )
+            meia_esquerda.full_clean()  # Isso chamará o método clean
+            meia_esquerda.save()
+            
+            # Criar meia carcaça direita
+            meia_direita = MeiaCarcaça(
+                bovino=animal,
+                lado='direita',
+                posicao_trilho=trilho,
+                posicao_gancho=gancho_inicio + 1,
+                peso=peso_meia,
+                data_entrada_estoque=timezone.now()
+            )
+            meia_direita.full_clean()  # Isso chamará o método clean
+            meia_direita.save()
+            
+            messages.success(request, f'Animal {animal.numero_brinco} enviado para o estoque com sucesso!')
+            return redirect('lista_animais_para_estoque')
+            
+        except ValueError:
+            messages.error(request, 'Valores inválidos fornecidos. Verifique os campos e tente novamente.')
+            contexto = {
+                'animal': animal
+            }
+            return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
+        except ValidationError as e:
+            messages.error(request, e.message)
+            contexto = {
+                'animal': animal
+            }
+            return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
+        except Exception as e:
+            messages.error(request, f'Erro ao enviar para o estoque: {str(e)}')
+            contexto = {
+                'animal': animal
+            }
+            return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
     
     contexto = {
         'animal': animal
@@ -384,3 +420,75 @@ def pesquisar_estoque(request):
     }
     
     return render(request, 'frigorifico_app/pesquisar_estoque.html', contexto)
+
+def ordem_abate(request):
+    # Obter a data selecionada ou usar a data de hoje
+    if request.method == 'POST':
+        data_selecionada_str = request.POST.get('data_selecionada')
+        if data_selecionada_str:
+            try:
+                # Converter string para objeto date
+                data_selecionada = date.fromisoformat(data_selecionada_str)
+            except ValueError:
+                # Se houver erro na conversão, usar a data de hoje
+                data_selecionada = date.today()
+        else:
+            # Se não houver data selecionada, usar a data de hoje
+            data_selecionada = date.today()
+    else:
+        # Por padrão, mostrar animais com data de hoje
+        data_selecionada = date.today()
+    
+    # Filtrar animais pela data selecionada e ordenar por ordem de abate
+    animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
+    
+    # Se não houver ordem definida, definir uma ordem automática
+    if animais and animais.first().ordem_abate is None:
+        for i, animal in enumerate(animais):
+            animal.ordem_abate = i + 1
+            animal.save()
+        animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
+    
+    contexto = {
+        'animais': animais,
+        'data_selecionada': data_selecionada,
+    }
+    
+    return render(request, 'frigorifico_app/ordem_abate.html', contexto)
+
+def atualizar_ordem_abate(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            # Obter dados do POST
+            ordens = request.POST.get('ordens')
+            data_abate_str = request.POST.get('data_abate')
+            
+            # Verificar se os dados estão presentes
+            if not ordens or not data_abate_str:
+                return JsonResponse({'status': 'error', 'message': 'Dados incompletos'})
+            
+            # Converter string JSON em lista
+            ordens_lista = json.loads(ordens)
+            
+            # Converter string de data em objeto date
+            try:
+                data_abate = date.fromisoformat(data_abate_str)
+            except ValueError:
+                return JsonResponse({'status': 'error', 'message': 'Formato de data inválido. Deve ser no formato YYYY-MM-DD.'})
+            
+            # Atualizar a ordem de abate de cada animal
+            for i, animal_id in enumerate(ordens_lista):
+                try:
+                    animal = Bovino.objects.get(id=animal_id, data_abate=data_abate)
+                    animal.ordem_abate = i + 1
+                    animal.save()
+                except Bovino.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': f'Animal com ID {animal_id} não encontrado para a data especificada.'})
+            
+            return JsonResponse({'status': 'success'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Erro ao decodificar os dados de ordem.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    
+    return JsonResponse({'status': 'error', 'message': 'Método não permitido'})

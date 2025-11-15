@@ -32,4 +32,6 @@ urlpatterns = [
     path('estoque/enviar/<int:id>/', views.enviar_para_estoque, name='enviar_para_estoque'),
     path('estoque/visualizar/', views.visualizar_estoque, name='visualizar_estoque'),
     path('estoque/pesquisar/', views.pesquisar_estoque, name='pesquisar_estoque'),
+    path('ordem-abate/', views.ordem_abate, name='ordem_abate'),
+    path('ordem-abate/atualizar/', views.atualizar_ordem_abate, name='atualizar_ordem_abate'),
 ]

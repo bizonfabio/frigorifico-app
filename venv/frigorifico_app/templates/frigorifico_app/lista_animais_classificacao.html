@@ -15,6 +15,7 @@
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
+                                <th>Ordem Abate</th>
                                 <th>Número do Brinco</th>
                                 <th>Produtor</th>
                                 <th>Sexo</th>
@@ -27,6 +28,7 @@
                         <tbody>
                             {% for animal in animais %}
                             <tr>
+                                <td>{{ animal.ordem_abate|default:"-" }}</td>
                                 <td>{{ animal.numero_brinco }}</td>
                                 <td>{{ animal.nome_produtor }}</td>
                                 <td>
