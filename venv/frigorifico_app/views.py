@@ -7,21 +7,22 @@ from .models import Bovino, MeiaCarcaça
 from datetime import date
 import json
 
+
 def home(request):
     # Se for POST, significa que o usuário selecionou uma data
     if request.method == 'POST':
         data_selecionada = request.POST.get('data_selecionada')
         if data_selecionada:
             # Filtrar animais pela data selecionada
-            animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
+            animais = Bovino.objects.filter(data_abate=data_selecionada)
         else:
             # Se não houver data, mostrar todos os animais
-            animais = Bovino.objects.all().order_by('data_abate', 'ordem_abate')
+            animais = Bovino.objects.all()
             data_selecionada = "Todos"
     else:
         # Por padrão, mostrar animais com data de hoje
         data_selecionada = date.today()
-        animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
+        animais = Bovino.objects.filter(data_abate=data_selecionada)
     
     # Contar total de animais
     total_animais = animais.count()
@@ -33,6 +34,11 @@ def home(request):
     }
     
     return render(request, 'frigorifico_app/home.html', contexto)
+
+
+def registro_inicial(request):
+    return render(request, 'frigorifico_app/registro_inicial.html')
+
 
 def registrar_gta(request):
     if request.method == 'POST':
@@ -47,6 +53,7 @@ def registrar_gta(request):
         return redirect('registrar_animais')
     
     return render(request, 'frigorifico_app/registrar_gta.html')
+
 
 def registrar_animais(request):
     if request.method == 'POST':
@@ -149,9 +156,6 @@ def registrar_animais(request):
     }
     
     return render(request, 'frigorifico_app/registrar_animais.html', contexto)
-
-def registro_inicial(request):
-    return render(request, 'frigorifico_app/registro_inicial.html')
 
 def lista_animais_para_avaliacao(request):
     # Mostrar apenas animais que ainda não foram avaliados, ordenados pela ordem de abate
@@ -386,6 +390,7 @@ def pesquisar_estoque(request):
     # Inicializar variáveis
     meias_carcaças = MeiaCarcaça.objects.none()
     pesquisa_realizada = False
+    resultados_encontrados = False
     
     if request.method == 'POST':
         # Obter parâmetros de pesquisa
@@ -409,14 +414,16 @@ def pesquisar_estoque(request):
         if peso_max:
             meias_carcaças = meias_carcaças.filter(peso__lte=peso_max)
         
-        meias_carcaças = meias_carcaças.order_by('posicao_trilho', 'posicao_gancho')
+        meias_carcaças = meias_carcaças.order_by('bovino__tipo_animal', 'bovino__qualidade', 'peso')
         pesquisa_realizada = True
+        resultados_encontrados = meias_carcaças.exists()
     
     contexto = {
         'meias_carcaças': meias_carcaças,
         'tipos': Bovino.TIPO_ANIMAL_CHOICES,
         'qualidades': Bovino.QUALIDADE_CHOICES,
-        'pesquisa_realizada': pesquisa_realizada
+        'pesquisa_realizada': pesquisa_realizada,
+        'resultados_encontrados': resultados_encontrados
     }
     
     return render(request, 'frigorifico_app/pesquisar_estoque.html', contexto)
@@ -492,3 +499,61 @@ def atualizar_ordem_abate(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
     
     return JsonResponse({'status': 'error', 'message': 'Método não permitido'})
+
+
+def relatorio_diario(request):
+    # Obter a data selecionada ou usar a data de hoje
+    if request.method == 'POST':
+        data_selecionada_str = request.POST.get('data_selecionada')
+        if data_selecionada_str:
+            try:
+                # Converter string para objeto date
+                data_selecionada = date.fromisoformat(data_selecionada_str)
+            except ValueError:
+                # Se houver erro na conversão, usar a data de hoje
+                data_selecionada = date.today()
+        else:
+            # Se não houver data selecionada, usar a data de hoje
+            data_selecionada = date.today()
+    else:
+        # Por padrão, mostrar animais com data de hoje
+        data_selecionada = date.today()
+    
+    # Filtrar animais abatidos na data selecionada
+    # Consideramos abatidos os animais que foram para o estoque (tem meias carcaças)
+    animais = Bovino.objects.filter(
+        data_abate=data_selecionada
+    ).prefetch_related('meiacarcaça_set').order_by('ordem_abate')
+    
+    # Calcular totais
+    total_animais = animais.count()
+    
+    contexto = {
+        'animais': animais,
+        'data_selecionada': data_selecionada,
+        'total_animais': total_animais,
+    }
+    
+    return render(request, 'frigorifico_app/relatorio_diario.html', contexto)
+
+def resumo_estoque(request):
+    # Obter todas as meias carcaças com seus dados relacionados
+    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').all()
+    
+    # Calcular totais por tipo e qualidade
+    from django.db.models import Sum, Count
+    resumo = meias_carcaças.values(
+        'bovino__tipo_animal', 
+        'bovino__qualidade'
+    ).annotate(
+        total_peso=Sum('peso'),
+        quantidade=Count('id')
+    ).order_by('bovino__tipo_animal', 'bovino__qualidade')
+    
+    contexto = {
+        'resumo': resumo,
+        'tipos': Bovino.TIPO_ANIMAL_CHOICES,
+        'qualidades': Bovino.QUALIDADE_CHOICES,
+    }
+    
+    return render(request, 'frigorifico_app/resumo_estoque.html', contexto)

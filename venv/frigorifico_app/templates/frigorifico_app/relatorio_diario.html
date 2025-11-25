@@ -1,0 +1,143 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Relatório Diário - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Relatório Diário de Animais Abatidos</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <div class="row align-items-end">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_selecionada" class="form-label">Data de Abate:</label>
+                                <input type="date" class="form-control" id="data_selecionada" name="data_selecionada" value="{{ data_selecionada|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-success" id="exportarPdf">
+                                    <i class="fas fa-file-pdf"></i> Exportar para PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Data selecionada:</strong> {{ data_selecionada|date:"d/m/Y" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Total de animais abatidos:</strong> {{ total_animais }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if animais %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Ordem Abate</th>
+                                <th>Número do Brinco</th>
+                                <th>Produtor</th>
+                                <th>Sexo</th>
+                                <th>GTA</th>
+                                <th>Tipo</th>
+                                <th>Qualidade</th>
+                                <th>Peso Total (kg)</th>
+                                <th>Trilho</th>
+                                <th>Ganchos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for animal in animais %}
+                            <tr>
+                                <td>{{ animal.ordem_abate|default:"-" }}</td>
+                                <td>{{ animal.numero_brinco }}</td>
+                                <td>{{ animal.nome_produtor }}</td>
+                                <td>
+                                    {% if animal.sexo == 'macho' %}
+                                        <span class="badge bg-primary">Macho</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Fêmea</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ animal.gta }}</td>
+                                <td>
+                                    {% if animal.tipo_animal %}
+                                        {{ animal.tipo_animal|title }}
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Não Classificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if animal.qualidade %}
+                                        {{ animal.qualidade|title }}
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Não Classificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with meias_carcaças=animal.meiacarcaça_set.all %}
+                                        {% if meias_carcaças %}
+                                            {{ meias_carcaças.first.peso|add:meias_carcaças.last.peso|floatformat:2 }}
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Sem Peso</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with meias_carcaças=animal.meiacarcaça_set.all %}
+                                        {% if meias_carcaças %}
+                                            {{ meias_carcaças.first.posicao_trilho }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with meias_carcaças=animal.meiacarcaça_set.all %}
+                                        {% if meias_carcaças %}
+                                            {{ meias_carcaças.first.posicao_gancho }} e {{ meias_carcaças.last.posicao_gancho }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">
+                    <h4 class="alert-heading">Nenhum animal encontrado</h4>
+                    <p>Não há animais abatidos registrados para a data selecionada.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('exportarPdf').addEventListener('click', function() {
+        alert('Funcionalidade de exportação para PDF estará disponível em breve.');
+    });
+</script>
+{% endblock %}
