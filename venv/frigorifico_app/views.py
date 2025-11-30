@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, models
 from django.utils import timezone
 from django.http import JsonResponse
+from django.core.exceptions import ValidationError
 from .models import Bovino, MeiaCarcaça
 from datetime import date
 import json
 
 
+@login_required
 def home(request):
     # Se for POST, significa que o usuário selecionou uma data
     if request.method == 'POST':
@@ -36,10 +39,12 @@ def home(request):
     return render(request, 'frigorifico_app/home.html', contexto)
 
 
+@login_required
 def registro_inicial(request):
     return render(request, 'frigorifico_app/registro_inicial.html')
 
 
+@login_required
 def registrar_gta(request):
     if request.method == 'POST':
         gta = request.POST.get('gta')
@@ -55,6 +60,7 @@ def registrar_gta(request):
     return render(request, 'frigorifico_app/registrar_gta.html')
 
 
+@login_required
 def registrar_animais(request):
     if request.method == 'POST':
         # Pegar dados do formulário
@@ -157,6 +163,8 @@ def registrar_animais(request):
     
     return render(request, 'frigorifico_app/registrar_animais.html', contexto)
 
+
+@login_required
 def lista_animais_para_avaliacao(request):
     # Mostrar apenas animais que ainda não foram avaliados, ordenados pela ordem de abate
     animais = Bovino.objects.filter(status_avaliacao='nao_avaliado').order_by('data_abate', 'ordem_abate')
@@ -167,6 +175,8 @@ def lista_animais_para_avaliacao(request):
     
     return render(request, 'frigorifico_app/lista_animais_avaliacao.html', contexto)
 
+
+@login_required
 def avaliar_animal(request, id):
     animal = get_object_or_404(Bovino, id=id)
     
@@ -209,16 +219,34 @@ def avaliar_animal(request, id):
         
         animal.observacoes_avaliacao = request.POST.get('observacoes_avaliacao')
         
-        # Determinar status da avaliação com base nas seleções
-        # Se alguma parte tiver uma condição diferente de "Aprovado", o animal é inapto
+        # Verificar se todas as partes foram avaliadas
         partes_vermelhas = [animal.condicao_geral, animal.carcassa, animal.figado, animal.coracao,
                             animal.pulmoes, animal.rins, animal.diafragma, animal.lingua, animal.cabeca]
         
         partes_brancas = [animal.utero, animal.baco_pancreas, animal.intestino_estomagos_bexiga, 
                           animal.glandula_mamaria]
         
-        # Verificar se alguma parte (vermelha ou branca) foi condenada
-        if any(parte and parte != "Aprovado" for parte in partes_vermelhas + partes_brancas):
+        # Verificar se todas as partes foram preenchidas
+        todas_partes_preenchidas = all(partes_vermelhas) and all(partes_brancas)
+        
+        if not todas_partes_preenchidas:
+            messages.error(request, 'Por favor, avalie todas as partes do animal (vísceras vermelhas e brancas) antes de finalizar.')
+            contexto = {
+                'animal': animal,
+                'opcoes': opcoes
+            }
+            return render(request, 'frigorifico_app/avaliar_animal.html', contexto)
+        
+        # Determinar status da avaliação com base nas seleções
+        # Se alguma parte tiver uma condição diferente de "Aprovado", o animal é inapto
+        condenado = False
+        for parte in partes_vermelhas + partes_brancas:
+            if parte and parte != 'Aprovado':
+                condenado = True
+                break
+        
+        # Definir status da avaliação
+        if condenado:
             animal.status_avaliacao = 'inapto'
         else:
             animal.status_avaliacao = 'apto'
@@ -236,6 +264,8 @@ def avaliar_animal(request, id):
     
     return render(request, 'frigorifico_app/avaliar_animal.html', contexto)
 
+
+@login_required
 def lista_animais_para_classificacao(request):
     # Mostrar apenas animais que foram avaliados como aptos, ordenados pela ordem de abate
     animais = Bovino.objects.filter(status_avaliacao='apto', tipo_animal__isnull=True).order_by('data_abate', 'ordem_abate')
@@ -246,6 +276,8 @@ def lista_animais_para_classificacao(request):
     
     return render(request, 'frigorifico_app/lista_animais_classificacao.html', contexto)
 
+
+@login_required
 def classificar_animal(request, id):
     animal = get_object_or_404(Bovino, id=id)
     
@@ -273,6 +305,8 @@ def classificar_animal(request, id):
     
     return render(request, 'frigorifico_app/classificar_animal.html', contexto)
 
+
+@login_required
 def lista_animais_para_estoque(request):
     # Mostrar apenas animais que foram classificados e ainda não estão no estoque, ordenados pela ordem de abate
     animais = Bovino.objects.filter(
@@ -287,6 +321,8 @@ def lista_animais_para_estoque(request):
     
     return render(request, 'frigorifico_app/lista_animais_estoque.html', contexto)
 
+
+@login_required
 def enviar_para_estoque(request, id):
     animal = get_object_or_404(Bovino, id=id)
     
@@ -376,9 +412,11 @@ def enviar_para_estoque(request, id):
     
     return render(request, 'frigorifico_app/enviar_para_estoque.html', contexto)
 
+
+@login_required
 def visualizar_estoque(request):
-    # Obter todas as meias carcaças no estoque
-    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').all().order_by('posicao_trilho', 'posicao_gancho')
+    # Mostrar todas as meias carcaças em estoque, ordenadas por trilho e gancho
+    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').order_by('posicao_trilho', 'posicao_gancho')
     
     contexto = {
         'meias_carcaças': meias_carcaças
@@ -386,6 +424,8 @@ def visualizar_estoque(request):
     
     return render(request, 'frigorifico_app/visualizar_estoque.html', contexto)
 
+
+@login_required
 def pesquisar_estoque(request):
     # Inicializar variáveis
     meias_carcaças = MeiaCarcaça.objects.none()
@@ -428,6 +468,32 @@ def pesquisar_estoque(request):
     
     return render(request, 'frigorifico_app/pesquisar_estoque.html', contexto)
 
+
+@login_required
+def resumo_estoque(request):
+    # Obter todas as meias carcaças com seus dados relacionados
+    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').all()
+    
+    # Calcular totais por tipo e qualidade
+    from django.db.models import Sum, Count
+    resumo = meias_carcaças.values(
+        'bovino__tipo_animal', 
+        'bovino__qualidade'
+    ).annotate(
+        total_peso=Sum('peso'),
+        quantidade=Count('id')
+    ).order_by('bovino__tipo_animal', 'bovino__qualidade')
+    
+    contexto = {
+        'resumo': resumo,
+        'tipos': Bovino.TIPO_ANIMAL_CHOICES,
+        'qualidades': Bovino.QUALIDADE_CHOICES,
+    }
+    
+    return render(request, 'frigorifico_app/resumo_estoque.html', contexto)
+
+
+@login_required
 def ordem_abate(request):
     # Obter a data selecionada ou usar a data de hoje
     if request.method == 'POST':
@@ -463,6 +529,8 @@ def ordem_abate(request):
     
     return render(request, 'frigorifico_app/ordem_abate.html', contexto)
 
+
+@login_required
 def atualizar_ordem_abate(request):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         try:
@@ -501,6 +569,7 @@ def atualizar_ordem_abate(request):
     return JsonResponse({'status': 'error', 'message': 'Método não permitido'})
 
 
+@login_required
 def relatorio_diario(request):
     # Obter a data selecionada ou usar a data de hoje
     if request.method == 'POST':
@@ -535,25 +604,3 @@ def relatorio_diario(request):
     }
     
     return render(request, 'frigorifico_app/relatorio_diario.html', contexto)
-
-def resumo_estoque(request):
-    # Obter todas as meias carcaças com seus dados relacionados
-    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').all()
-    
-    # Calcular totais por tipo e qualidade
-    from django.db.models import Sum, Count
-    resumo = meias_carcaças.values(
-        'bovino__tipo_animal', 
-        'bovino__qualidade'
-    ).annotate(
-        total_peso=Sum('peso'),
-        quantidade=Count('id')
-    ).order_by('bovino__tipo_animal', 'bovino__qualidade')
-    
-    contexto = {
-        'resumo': resumo,
-        'tipos': Bovino.TIPO_ANIMAL_CHOICES,
-        'qualidades': Bovino.QUALIDADE_CHOICES,
-    }
-    
-    return render(request, 'frigorifico_app/resumo_estoque.html', contexto)

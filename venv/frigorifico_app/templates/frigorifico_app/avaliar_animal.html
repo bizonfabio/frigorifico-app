@@ -65,7 +65,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="condicao_geral" class="form-label">Condição Geral:</label>
-                                    <select class="form-select" id="condicao_geral" name="condicao_geral">
+                                    <select class="form-select" id="condicao_geral" name="condicao_geral" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.condicao_geral %}
                                             <option value="{{ valor }}" {% if animal.condicao_geral == valor %}selected{% endif %}>
@@ -78,8 +78,8 @@
                             
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="carcassa" class="form-label">Carcassa:</label>
-                                    <select class="form-select" id="carcassa" name="carcassa">
+                                    <label for="carcassa" class="form-label">Carcaça:</label>
+                                    <select class="form-select" id="carcassa" name="carcassa" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.carcassa %}
                                             <option value="{{ valor }}" {% if animal.carcassa == valor %}selected{% endif %}>
@@ -95,7 +95,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="figado" class="form-label">Fígado:</label>
-                                    <select class="form-select" id="figado" name="figado">
+                                    <select class="form-select" id="figado" name="figado" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.figado %}
                                             <option value="{{ valor }}" {% if animal.figado == valor %}selected{% endif %}>
@@ -109,7 +109,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="coracao" class="form-label">Coração:</label>
-                                    <select class="form-select" id="coracao" name="coracao">
+                                    <select class="form-select" id="coracao" name="coracao" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.coracao %}
                                             <option value="{{ valor }}" {% if animal.coracao == valor %}selected{% endif %}>
@@ -125,7 +125,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="pulmoes" class="form-label">Pulmões:</label>
-                                    <select class="form-select" id="pulmoes" name="pulmoes">
+                                    <select class="form-select" id="pulmoes" name="pulmoes" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.pulmoes %}
                                             <option value="{{ valor }}" {% if animal.pulmoes == valor %}selected{% endif %}>
@@ -139,7 +139,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="rins" class="form-label">Rins:</label>
-                                    <select class="form-select" id="rins" name="rins">
+                                    <select class="form-select" id="rins" name="rins" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.rins %}
                                             <option value="{{ valor }}" {% if animal.rins == valor %}selected{% endif %}>
@@ -155,7 +155,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="diafragma" class="form-label">Diafragma:</label>
-                                    <select class="form-select" id="diafragma" name="diafragma">
+                                    <select class="form-select" id="diafragma" name="diafragma" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.diafragma %}
                                             <option value="{{ valor }}" {% if animal.diafragma == valor %}selected{% endif %}>
@@ -169,7 +169,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="lingua" class="form-label">Língua:</label>
-                                    <select class="form-select" id="lingua" name="lingua">
+                                    <select class="form-select" id="lingua" name="lingua" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.lingua %}
                                             <option value="{{ valor }}" {% if animal.lingua == valor %}selected{% endif %}>
@@ -185,7 +185,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="cabeca" class="form-label">Cabeça:</label>
-                                    <select class="form-select" id="cabeca" name="cabeca">
+                                    <select class="form-select" id="cabeca" name="cabeca" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.cabeca %}
                                             <option value="{{ valor }}" {% if animal.cabeca == valor %}selected{% endif %}>
@@ -202,7 +202,7 @@
                     <div id="secaoBrancas" style="display: none;">
                         <div class="row">
                             <div class="col-12">
-                                <div class="alert alert-light border">
+                                <div class="alert alert-info">
                                     <h5 class="mb-0">Vísceras Brancas</h5>
                                 </div>
                             </div>
@@ -212,12 +212,11 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="utero" class="form-label">Útero:</label>
-                                    <select class="form-select" id="utero" name="utero">
+                                    <select class="form-select" id="utero" name="utero" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.utero %}
                                             <option value="{{ valor }}" {% if animal.utero == valor %}selected{% endif %}>
                                                 {{ descricao }}
-                                                {% if valor == "Prenha" %}<strong>(Destacar caso esteja prenha)</strong>{% endif %}
                                             </option>
                                         {% endfor %}
                                     </select>
@@ -226,8 +225,8 @@
                             
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="baco_pancreas" class="form-label">Baço/Pancreas:</label>
-                                    <select class="form-select" id="baco_pancreas" name="baco_pancreas">
+                                    <label for="baco_pancreas" class="form-label">Baço/Pâncreas:</label>
+                                    <select class="form-select" id="baco_pancreas" name="baco_pancreas" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.baco_pancreas %}
                                             <option value="{{ valor }}" {% if animal.baco_pancreas == valor %}selected{% endif %}>
@@ -243,7 +242,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="intestino_estomagos_bexiga" class="form-label">Intestino/Estômagos/Bexiga:</label>
-                                    <select class="form-select" id="intestino_estomagos_bexiga" name="intestino_estomagos_bexiga">
+                                    <select class="form-select" id="intestino_estomagos_bexiga" name="intestino_estomagos_bexiga" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.intestino_estomagos_bexiga %}
                                             <option value="{{ valor }}" {% if animal.intestino_estomagos_bexiga == valor %}selected{% endif %}>
@@ -257,7 +256,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="glandula_mamaria" class="form-label">Glândula Mamária:</label>
-                                    <select class="form-select" id="glandula_mamaria" name="glandula_mamaria">
+                                    <select class="form-select" id="glandula_mamaria" name="glandula_mamaria" required>
                                         <option value="">Selecione</option>
                                         {% for valor, descricao in opcoes.glandula_mamaria %}
                                             <option value="{{ valor }}" {% if animal.glandula_mamaria == valor %}selected{% endif %}>
@@ -286,9 +285,12 @@
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Critérios de Avaliação</h5>
-                <p>Selecione uma condição para cada parte do animal. O animal será considerado <strong>INAPTO</strong> se qualquer parte tiver uma condição diferente de "Aprovado".</p>
+                <p>Selecione uma condição para cada parte do animal. O animal será considerado <strong>INAPTO</strong> se qualquer parte (vermelha ou branca) tiver uma condição diferente de "Aprovado".</p>
                 <p><strong>Vísceras Vermelhas:</strong> Órgãos com coloração avermelhada (fígado, coração, pulmões, rins, etc.)</p>
                 <p><strong>Vísceras Brancas:</strong> Órgãos com coloração esbranquiçada (baço, pâncreas, intestinos, útero, glândulas, etc.)</p>
+                <div class="alert alert-warning">
+                    <strong>Atenção:</strong> Todas as partes do animal devem ser avaliadas antes de finalizar. Não é possível salvar a avaliação com campos vazios.
+                </div>
             </div>
         </div>
     </div>
@@ -314,6 +316,12 @@
                 secaoVermelhas.style.display = 'none';
                 secaoBrancas.style.display = 'block';
             }
+        });
+        
+        // Marcar todos os selects como obrigatórios
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            select.setAttribute('required', 'required');
         });
     });
 </script>
