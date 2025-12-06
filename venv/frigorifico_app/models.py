@@ -238,29 +238,48 @@ class MeiaCarcaça(models.Model):
     lado = models.CharField(max_length=10, choices=LADO_CHOICES)
     posicao_trilho = models.CharField(max_length=10)
     posicao_gancho = models.IntegerField()
-    peso = models.DecimalField(max_digits=5, decimal_places=2)
-    data_entrada_estoque = models.DateTimeField(auto_now_add=True)
+    peso = models.DecimalField(max_digits=8, decimal_places=2)
+    data_entrada_estoque = models.DateTimeField()
+    
+    # Campos para venda
+    comprador = models.CharField(max_length=100, blank=True, null=True)
+    data_venda = models.DateTimeField(blank=True, null=True)
+    preco_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
     def clean(self):
         # Verificar se já existe uma meia carcaça nessa posição
-        if MeiaCarcaça.objects.exclude(pk=self.pk).filter(
-            posicao_trilho=self.posicao_trilho,
-            posicao_gancho=self.posicao_gancho
-        ).exists():
-            raise ValidationError(
-                f'Já existe uma meia carcaça no trilho {self.posicao_trilho} e gancho {self.posicao_gancho}.'
+        if not self.pk:  # Apenas para criação, não para atualização
+            queryset = MeiaCarcaça.objects.filter(
+                posicao_trilho=self.posicao_trilho,
+                posicao_gancho=self.posicao_gancho
             )
-        
+            if queryset.exists():
+                raise ValidationError(f"Já existe uma meia carcaça no trilho {self.posicao_trilho} e gancho {self.posicao_gancho}")
+
         # Verificar se o peso foi fornecido
         if not self.peso:
             raise ValidationError('O peso é obrigatório para inserir no estoque.')
+
+        # Garantir que a data de venda seja registrada corretamente ao vender
+        if self.comprador and not self.data_venda:
+            raise ValidationError('A data de venda deve ser preenchida quando um comprador é informado.')
+        if not self.comprador and self.data_venda:
+            # Se não houver comprador, a data de venda deve ser None
+            self.data_venda = None
+
+    def esta_vendida(self):
+        return self.data_venda is not None
     
     def save(self, *args, **kwargs):
+        # Define a data de entrada no estoque como a hora atual se não estiver definida
+        if not self.data_entrada_estoque:
+            self.data_entrada_estoque = timezone.now()
+            
         self.clean()
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f'{self.bovino.numero_brinco} - {self.lado} - Trilho {self.posicao_trilho} Gancho {self.posicao_gancho}'
+        return f"{self.bovino.numero_brinco} - {self.get_lado_display()} - Trilho {self.posicao_trilho} Gancho {self.posicao_gancho}"
     
     class Meta:
         verbose_name = "Meia Carcaça"

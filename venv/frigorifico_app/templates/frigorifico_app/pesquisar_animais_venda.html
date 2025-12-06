@@ -1,0 +1,118 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Pesquisar Animais para Venda - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Pesquisar Animais para Venda</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Animal:</label>
+                                <select class="form-select" id="tipo" name="tipo">
+                                    <option value="">Todos</option>
+                                    {% for valor, descricao in tipos %}
+                                        <option value="{{ valor }}" {% if request.POST.tipo == valor %}selected{% endif %}>
+                                            {{ descricao }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="qualidade" class="form-label">Qualidade:</label>
+                                <select class="form-select" id="qualidade" name="qualidade">
+                                    <option value="">Todas</option>
+                                    {% for valor, descricao in qualidades %}
+                                        <option value="{{ valor }}" {% if request.POST.qualidade == valor %}selected{% endif %}>
+                                            {{ descricao }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="peso_min" class="form-label">Peso Mínimo (kg):</label>
+                                <input type="number" step="0.01" class="form-control" id="peso_min" name="peso_min" value="{{ request.POST.peso_min|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="peso_max" class="form-label">Peso Máximo (kg):</label>
+                                <input type="number" step="0.01" class="form-control" id="peso_max" name="peso_max" value="{{ request.POST.peso_max|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-1"></i>Pesquisar
+                        </button>
+                    </div>
+                </form>
+                
+                {% if pesquisa_realizada %}
+                    {% if resultados_encontrados %}
+                        <div class="mt-4">
+                            <h4>Resultados da Pesquisa</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Brinco</th>
+                                            <th>Produtor</th>
+                                            <th>Tipo</th>
+                                            <th>Qualidade</th>
+                                            <th>Peso (kg)</th>
+                                            <th>Trilho</th>
+                                            <th>Gancho</th>
+                                            <th>Lado</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for meia in meias_carcaças %}
+                                        <tr>
+                                            <td>{{ meia.bovino.numero_brinco }}</td>
+                                            <td>{{ meia.bovino.nome_produtor }}</td>
+                                            <td>{{ meia.bovino.get_tipo_animal_display }}</td>
+                                            <td>{{ meia.bovino.get_qualidade_display }}</td>
+                                            <td>{{ meia.peso }}</td>
+                                            <td>{{ meia.posicao_trilho }}</td>
+                                            <td>{{ meia.posicao_gancho }}</td>
+                                            <td>{{ meia.get_lado_display }}</td>
+                                            <td>
+                                                <a href="{% url 'registrar_venda' meia.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Vender
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-4">
+                            <h4 class="alert-heading">Nenhum resultado encontrado</h4>
+                            <p>Não foram encontrados animais com os critérios especificados.</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,7 +7,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h2 class="mb-0">Estoque da Câmara Fria</h2>
+                <h2 class="mb-0">Visualizar Estoque</h2>
             </div>
             <div class="card-body">
                 {% if meias_carcaças %}
@@ -15,35 +15,47 @@
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>Trilho</th>
-                                <th>Gancho</th>
-                                <th>Número do Brinco</th>
+                                <th>Brinco</th>
                                 <th>Produtor</th>
-                                <th>Lado da Carcaça</th>
                                 <th>Tipo</th>
                                 <th>Qualidade</th>
                                 <th>Peso (kg)</th>
-                                <th>Data de Entrada</th>
+                                <th>Trilho</th>
+                                <th>Gancho</th>
+                                <th>Lado</th>
+                                <th>Data Entrada</th>
+                                <th>Status</th>
+                                <th>Valor (R$)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for meia in meias_carcaças %}
                             <tr>
-                                <td>{{ meia.posicao_trilho }}</td>
-                                <td>{{ meia.posicao_gancho }}</td>
                                 <td>{{ meia.bovino.numero_brinco }}</td>
                                 <td>{{ meia.bovino.nome_produtor }}</td>
-                                <td>
-                                    {% if meia.lado == 'esquerda' %}
-                                        <span class="badge bg-primary">Esquerda</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Direita</span>
-                                    {% endif %}
-                                </td>
                                 <td>{{ meia.bovino.get_tipo_animal_display }}</td>
                                 <td>{{ meia.bovino.get_qualidade_display }}</td>
-                                <td>{{ meia.peso|floatformat:2 }}</td>
+                                <td>{{ meia.peso }}</td>
+                                <td>{{ meia.posicao_trilho }}</td>
+                                <td>{{ meia.posicao_gancho }}</td>
+                                <td>{{ meia.get_lado_display }}</td>
                                 <td>{{ meia.data_entrada_estoque|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if meia.esta_vendida %}
+                                        <span class="badge bg-success">Vendido</span>
+                                        <small class="d-block">Para: {{ meia.comprador }}</small>
+                                        <small class="d-block">Em: {{ meia.data_venda|date:"d/m/Y H:i" }}</small>
+                                    {% else %}
+                                        <span class="badge bg-primary">Disponível</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if meia.esta_vendida and meia.preco_kg %}
+                                        {{ meia.preco_kg|floatformat:2 }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -52,7 +64,7 @@
                 {% else %}
                 <div class="alert alert-info text-center">
                     <h4 class="alert-heading">Estoque vazio</h4>
-                    <p>Não há meias carcaças armazenadas na câmara fria no momento.</p>
+                    <p>Não há meias carcaças registradas no estoque.</p>
                 </div>
                 {% endif %}
             </div>

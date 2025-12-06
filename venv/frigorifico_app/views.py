@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .models import Bovino, MeiaCarcaça
 from datetime import date
+from decimal import Decimal
 import json
 
 
@@ -574,33 +575,183 @@ def relatorio_diario(request):
     # Obter a data selecionada ou usar a data de hoje
     if request.method == 'POST':
         data_selecionada_str = request.POST.get('data_selecionada')
+        data_venda_str = request.POST.get('data_venda')
+        
+        # Filtros
+        filtro_data_abate = None
+        filtro_data_venda = None
+        
         if data_selecionada_str:
             try:
                 # Converter string para objeto date
-                data_selecionada = date.fromisoformat(data_selecionada_str)
+                filtro_data_abate = date.fromisoformat(data_selecionada_str)
             except ValueError:
                 # Se houver erro na conversão, usar a data de hoje
-                data_selecionada = date.today()
-        else:
-            # Se não houver data selecionada, usar a data de hoje
-            data_selecionada = date.today()
+                filtro_data_abate = date.today()
+        
+        if data_venda_str:
+            try:
+                # Converter string para objeto date
+                filtro_data_venda = date.fromisoformat(data_venda_str)
+            except ValueError:
+                pass
+        
+        # Definir qual data usar para exibição (padrão é hoje)
+        data_exibicao = filtro_data_abate if filtro_data_abate else date.today()
     else:
         # Por padrão, mostrar animais com data de hoje
-        data_selecionada = date.today()
+        filtro_data_abate = date.today()
+        filtro_data_venda = None
+        data_exibicao = date.today()
     
-    # Filtrar animais abatidos na data selecionada
-    # Consideramos abatidos os animais que foram para o estoque (tem meias carcaças)
-    animais = Bovino.objects.filter(
-        data_abate=data_selecionada
-    ).prefetch_related('meiacarcaça_set').order_by('ordem_abate')
+    # Filtrar animais
+    animais = Bovino.objects.all().prefetch_related('meiacarcaça_set')
+    
+    # Aplicar filtro de data de abate se especificado
+    if filtro_data_abate:
+        animais = animais.filter(data_abate=filtro_data_abate)
+    
+    # Aplicar filtro de data de venda se especificado
+    if filtro_data_venda:
+        animais = animais.filter(meiacarcaça__data_venda__date=filtro_data_venda)
+    
+    # Remover duplicatas caso tenha filtrado por data de venda
+    if filtro_data_venda:
+        animais = animais.distinct()
+    
+    # Ordenar por ordem de abate
+    animais = animais.order_by('ordem_abate')
     
     # Calcular totais
     total_animais = animais.count()
     
     contexto = {
         'animais': animais,
-        'data_selecionada': data_selecionada,
+        'data_selecionada': data_exibicao,
+        'filtro_data_venda': filtro_data_venda,
         'total_animais': total_animais,
     }
     
     return render(request, 'frigorifico_app/relatorio_diario.html', contexto)
+
+
+@login_required
+def detalhes_animal(request, id):
+    animal = get_object_or_404(Bovino, id=id)
+    
+    contexto = {
+        'animal': animal,
+    }
+    
+    return render(request, 'frigorifico_app/detalhes_animal.html', contexto)
+
+
+@login_required
+def pesquisar_animais_venda(request):
+    # Inicializar variáveis
+    meias_carcaças = MeiaCarcaça.objects.none()
+    pesquisa_realizada = False
+    resultados_encontrados = False
+    
+    if request.method == 'POST':
+        # Obter parâmetros de pesquisa
+        tipo = request.POST.get('tipo')
+        qualidade = request.POST.get('qualidade')
+        peso_min = request.POST.get('peso_min')
+        peso_max = request.POST.get('peso_max')
+        
+        # Construir consulta
+        meias_carcaças = MeiaCarcaça.objects.select_related('bovino').filter(
+            bovino__tipo_animal__isnull=False,
+            bovino__qualidade__isnull=False,
+            data_venda__isnull=True  # Apenas meias carcaças não vendidas
+        )
+        
+        if tipo:
+            meias_carcaças = meias_carcaças.filter(bovino__tipo_animal=tipo)
+        
+        if qualidade:
+            meias_carcaças = meias_carcaças.filter(bovino__qualidade=qualidade)
+        
+        if peso_min:
+            meias_carcaças = meias_carcaças.filter(peso__gte=peso_min)
+        
+        if peso_max:
+            meias_carcaças = meias_carcaças.filter(peso__lte=peso_max)
+        
+        meias_carcaças = meias_carcaças.order_by('bovino__tipo_animal', 'bovino__qualidade', 'peso')
+        pesquisa_realizada = True
+        resultados_encontrados = meias_carcaças.exists()
+    
+    contexto = {
+        'meias_carcaças': meias_carcaças,
+        'tipos': Bovino.TIPO_ANIMAL_CHOICES,
+        'qualidades': Bovino.QUALIDADE_CHOICES,
+        'pesquisa_realizada': pesquisa_realizada,
+        'resultados_encontrados': resultados_encontrados
+    }
+    
+    return render(request, 'frigorifico_app/pesquisar_animais_venda.html', contexto)
+
+
+@login_required
+def registrar_venda(request, id):
+    # Buscar a meia carcaça pelo ID e verificar se ainda não foi vendida
+    try:
+        meia_carcaça = MeiaCarcaça.objects.get(id=id, data_venda__isnull=True)
+    except MeiaCarcaça.DoesNotExist:
+        messages.error(request, 'Meia carcaça não encontrada ou já foi vendida.')
+        return redirect('pesquisar_animais_venda')
+    
+    if request.method == 'POST':
+        # Obter dados do formulário
+        comprador = request.POST.get('comprador')
+        preco_kg_str = request.POST.get('preco_kg')
+        
+        # Validar campos obrigatórios
+        if not comprador or not preco_kg_str:
+            messages.error(request, 'Todos os campos são obrigatórios.')
+            contexto = {
+                'meia_carcaça': meia_carcaça
+            }
+            return render(request, 'frigorifico_app/registrar_venda.html', contexto)
+        
+        try:
+            preco_kg = float(preco_kg_str.replace(',', '.'))
+            
+            # Validar preço positivo
+            if preco_kg <= 0:
+                messages.error(request, 'O preço por kg deve ser um valor positivo.')
+                contexto = {
+                    'meia_carcaça': meia_carcaça
+                }
+                return render(request, 'frigorifico_app/registrar_venda.html', contexto)
+            
+            # Registrar a venda
+            meia_carcaça.comprador = comprador
+            meia_carcaça.preco_kg = preco_kg
+            meia_carcaça.data_venda = timezone.now()
+            meia_carcaça.save()
+            
+            valor_total = meia_carcaça.peso * Decimal(str(preco_kg))
+            messages.success(request, f'Venda registrada com sucesso! Valor total: R$ {valor_total:.2f}')
+            return redirect('pesquisar_animais_venda')
+            
+        except ValueError:
+            messages.error(request, 'Valor inválido fornecido para o preço por kg.')
+            contexto = {
+                'meia_carcaça': meia_carcaça
+            }
+            return render(request, 'frigorifico_app/registrar_venda.html', contexto)
+        except Exception as e:
+            messages.error(request, f'Erro ao registrar a venda: {str(e)}')
+            contexto = {
+                'meia_carcaça': meia_carcaça
+            }
+            return render(request, 'frigorifico_app/registrar_venda.html', contexto)
+    
+    contexto = {
+        'meia_carcaça': meia_carcaça
+    }
+    
+    return render(request, 'frigorifico_app/registrar_venda.html', contexto)

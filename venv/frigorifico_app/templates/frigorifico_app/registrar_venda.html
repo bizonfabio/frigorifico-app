@@ -1,0 +1,98 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Registrar Venda - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Registrar Venda</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>Informações do Animal</h4>
+                        <dl class="row">
+                            <dt class="col-sm-4">Brinco:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.bovino.numero_brinco }}</dd>
+                            
+                            <dt class="col-sm-4">Produtor:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.bovino.nome_produtor }}</dd>
+                            
+                            <dt class="col-sm-4">Tipo:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.bovino.get_tipo_animal_display }}</dd>
+                            
+                            <dt class="col-sm-4">Qualidade:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.bovino.get_qualidade_display }}</dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4>Informações da Meia Carcaça</h4>
+                        <dl class="row">
+                            <dt class="col-sm-4">Peso:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.peso }} kg</dd>
+                            
+                            <dt class="col-sm-4">Trilho:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.posicao_trilho }}</dd>
+                            
+                            <dt class="col-sm-4">Gancho:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.posicao_gancho }}</dd>
+                            
+                            <dt class="col-sm-4">Lado:</dt>
+                            <dd class="col-sm-8">{{ meia_carcaça.get_lado_display }}</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="comprador" class="form-label">Nome do Comprador:</label>
+                                <input type="text" class="form-control" id="comprador" name="comprador" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="preco_kg" class="form-label">Preço por kg (R$):</label>
+                                <input type="number" step="0.01" class="form-control" id="preco_kg" name="preco_kg" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5>Valor Total Estimado: R$ <span id="valorTotal">0.00</span></h5>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'pesquisar_animais_venda' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle me-1"></i>Confirmar Venda
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const peso = parseFloat('{{ meia_carcaça.peso }}');
+        const precoKgInput = document.getElementById('preco_kg');
+        const valorTotalSpan = document.getElementById('valorTotal');
+        
+        precoKgInput.addEventListener('input', function() {
+            const precoKg = parseFloat(this.value) || 0;
+            const valorTotal = peso * precoKg;
+            valorTotalSpan.textContent = valorTotal.toFixed(2);
+        });
+    });
+</script>
+{% endblock %}
