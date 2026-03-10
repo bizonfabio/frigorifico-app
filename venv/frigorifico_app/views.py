@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, models
+from django.db.models import Sum
 from django.utils import timezone
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -638,9 +639,11 @@ def relatorio_diario(request):
 @login_required
 def detalhes_animal(request, id):
     animal = get_object_or_404(Bovino, id=id)
+    peso_total = animal.meiacarcaça_set.aggregate(total=Sum('peso'))['total']
     
     contexto = {
         'animal': animal,
+        'peso_total': peso_total,
     }
     
     return render(request, 'frigorifico_app/detalhes_animal.html', contexto)

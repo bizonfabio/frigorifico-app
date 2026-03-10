@@ -72,7 +72,7 @@
                             <dd class="col-sm-8">{{ animal.data_classificacao|date:"d/m/Y H:i"|default:"Não classificado" }}</dd>
                             
                             <dt class="col-sm-4">Peso (kg):</dt>
-                            <dd class="col-sm-8">{{ animal.peso|default:"Não informado" }}</dd>
+                            <dd class="col-sm-8">{% if peso_total is not None %}{{ peso_total|floatformat:2 }}{% else %}Não informado{% endif %}</dd>
                         </dl>
                     </div>
                 </div>
@@ -190,7 +190,7 @@
                                     <dd class="col-sm-9">{{ animal.get_qualidade_display }}</dd>
                                     
                                     <dt class="col-sm-3">Peso (kg):</dt>
-                                    <dd class="col-sm-9">{{ animal.peso|default:"Não informado" }}</dd>
+                                    <dd class="col-sm-9">{% if peso_total is not None %}{{ peso_total|floatformat:2 }}{% else %}Não informado{% endif %}</dd>
                                 </dl>
                             </div>
                         </div>
