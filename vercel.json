@@ -1,14 +1,8 @@
 {
-  "builds": [
+  "rewrites": [
     {
-      "src": "venv/frigorifico_app/wsgi.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "venv/frigorifico_app/wsgi.py"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }

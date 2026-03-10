@@ -14,3 +14,6 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'frigorifico_app.settings')
 
 application = get_wsgi_application()
+
+# Vercel Python runtime looks for "app" (WSGI/ASGI entry point)
+app = application
