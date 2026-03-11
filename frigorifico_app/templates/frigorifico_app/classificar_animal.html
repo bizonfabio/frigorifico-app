@@ -1,0 +1,86 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Classificar Animal - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Classificar Animal</h2>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-4">Animal: {{ animal.numero_brinco }}</h4>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Informações do Animal</h5>
+                                <p><strong>Produtor:</strong> {{ animal.nome_produtor }}</p>
+                                <p><strong>Sexo:</strong> 
+                                    {% if animal.sexo == 'macho' %}
+                                        <span class="badge bg-primary">Macho</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Fêmea</span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>Data de Abate:</strong> {{ animal.data_abate|date:"d/m/Y" }}</p>
+                                <p><strong>GTA:</strong> {{ animal.gta }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Status da Avaliação</h5>
+                                <p><strong>Status:</strong> 
+                                    <span class="badge bg-success">Apto</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo_animal" class="form-label">Tipo de Animal:</label>
+                                <select class="form-select" id="tipo_animal" name="tipo_animal" required>
+                                    <option value="">Selecione o tipo</option>
+                                    {% for value, label in tipo_animal_choices %}
+                                        <option value="{{ value }}" {% if animal.tipo_animal == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="qualidade" class="form-label">Qualidade:</label>
+                                <select class="form-select" id="qualidade" name="qualidade" required>
+                                    <option value="">Selecione a qualidade</option>
+                                    {% for value, label in qualidade_choices %}
+                                        <option value="{{ value }}" {% if animal.qualidade == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'lista_animais_para_classificacao' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Salvar Classificação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Registro de Animais - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Registro de Animais</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">Para registrar animais para abate, siga os passos abaixo:</p>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="display-1 text-primary mb-3">
+                                    1
+                                </div>
+                                <h5 class="card-title">Informar GTA</h5>
+                                <p class="card-text">Informe o número do Guia de Trânsito Animal (GTA)</p>
+                                <a href="{% url 'registrar_gta' %}" class="btn btn-primary">Informar GTA</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="display-1 text-primary mb-3">
+                                    2
+                                </div>
+                                <h5 class="card-title">Registrar Animais</h5>
+                                <p class="card-text">Informe os dados de cada animal</p>
+                                <a href="{% url 'registrar_animais' %}" class="btn btn-outline-primary">Registrar Animais</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">Como funciona:</h5>
+                    <ol>
+                        <li>Primeiro informe o número do GTA e a quantidade de animais</li>
+                        <li>Depois preencha os dados de cada animal:
+                            <ul>
+                                <li>Número do brinco</li>
+                                <li>Nome do produtor</li>
+                                <li>Sexo do animal</li>
+                                <li>Data de abate</li>
+                            </ul>
+                        </li>
+                        <li>Confirme o registro</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Pesquisar Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Pesquisar no Estoque</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Animal:</label>
+                                <select class="form-select" id="tipo" name="tipo">
+                                    <option value="">Todos os tipos</option>
+                                    {% for value, label in tipos %}
+                                        <option value="{{ value }}">{{ label|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="qualidade" class="form-label">Qualidade:</label>
+                                <select class="form-select" id="qualidade" name="qualidade">
+                                    <option value="">Todas as qualidades</option>
+                                    {% for value, label in qualidades %}
+                                        <option value="{{ value }}">
+                                            {% if value == 'desossa' %}
+                                                Desossa
+                                            {% elif value == 'fraca' %}
+                                                Fraca
+                                            {% elif value == 'media' %}
+                                                Média
+                                            {% elif value == 'boa' %}
+                                                Boa
+                                            {% elif value == 'condenada' %}
+                                                Condenada
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="peso_min" class="form-label">Peso Mínimo (kg):</label>
+                                <input type="number" class="form-control" id="peso_min" name="peso_min" step="0.1" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="peso_max" class="form-label">Peso Máximo (kg):</label>
+                                <input type="number" class="form-control" id="peso_max" name="peso_max" step="0.1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Pesquisar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if pesquisa_realizada %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="mb-0">Resultados da Pesquisa</h3>
+            </div>
+            <div class="card-body">
+                {% if meias_carcaças %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Número do Brinco</th>
+                                <th>Tipo</th>
+                                <th>Qualidade</th>
+                                <th>Peso (kg)</th>
+                                <th>Trilho</th>
+                                <th>Gancho</th>
+                                <th>Lado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for meia in meias_carcaças %}
+                            <tr>
+                                <td>{{ meia.bovino.numero_brinco }}</td>
+                                <td>{{ meia.bovino.tipo_animal|title }}</td>
+                                <td>
+                                    {% if meia.bovino.qualidade == 'desossa' %}
+                                        Desossa
+                                    {% elif meia.bovino.qualidade == 'fraca' %}
+                                        Fraca
+                                    {% elif meia.bovino.qualidade == 'media' %}
+                                        Média
+                                    {% elif meia.bovino.qualidade == 'boa' %}
+                                        Boa
+                                    {% elif meia.bovino.qualidade == 'condenada' %}
+                                        Condenada
+                                    {% endif %}
+                                </td>
+                                <td>{{ meia.peso|floatformat:2 }}</td>
+                                <td>{{ meia.posicao_trilho }}</td>
+                                <td>{{ meia.posicao_gancho }}</td>
+                                <td>
+                                    {% if meia.lado == 'esquerda' %}
+                                        <span class="badge bg-primary">Esquerda</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Direita</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">
+                    <h4 class="alert-heading">Nenhum resultado encontrado</h4>
+                    <p>Não foram encontrados itens no estoque que correspondam aos critérios de pesquisa.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

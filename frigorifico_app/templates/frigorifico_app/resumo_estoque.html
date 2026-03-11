@@ -1,0 +1,79 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Resumo do Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Resumo do Estoque</h2>
+            </div>
+            <div class="card-body">
+                {% if resumo %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Tipo de Animal</th>
+                                <th>Qualidade</th>
+                                <th>Quantidade de Meias Carcaças</th>
+                                <th>Peso Total (kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resumo %}
+                            <tr>
+                                <td>{{ item.bovino__tipo_animal|title }}</td>
+                                <td>
+                                    {% if item.bovino__qualidade == 'desossa' %}
+                                        Desossa
+                                    {% elif item.bovino__qualidade == 'fraca' %}
+                                        Fraca
+                                    {% elif item.bovino__qualidade == 'media' %}
+                                        Média
+                                    {% elif item.bovino__qualidade == 'boa' %}
+                                        Boa
+                                    {% elif item.bovino__qualidade == 'condenada' %}
+                                        Condenada
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantidade }}</td>
+                                <td>{{ item.total_peso|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <h4 class="alert-heading">Estoque vazio</h4>
+                    <p>Não há itens no estoque no momento.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Pesquisar Itens Específicos</h5>
+                        <p class="card-text">Procure itens específicos no estoque por tipo, qualidade e peso.</p>
+                        <a href="{% url 'pesquisar_estoque' %}" class="btn btn-primary btn-lg">Pesquisar no Estoque</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Visualizar Todo o Estoque</h5>
+                        <p class="card-text">Veja todos os itens no estoque ordenados por trilho e gancho.</p>
+                        <a href="{% url 'visualizar_estoque' %}" class="btn btn-success btn-lg">Visualizar Estoque</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

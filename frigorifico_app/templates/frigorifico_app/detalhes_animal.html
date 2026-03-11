@@ -1,0 +1,272 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Detalhes do Animal - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Detalhes do Animal</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>Informações Básicas</h4>
+                        <dl class="row">
+                            <dt class="col-sm-4">Número do Brinco:</dt>
+                            <dd class="col-sm-8">{{ animal.numero_brinco }}</dd>
+                            
+                            <dt class="col-sm-4">Produtor:</dt>
+                            <dd class="col-sm-8">{{ animal.nome_produtor }}</dd>
+                            
+                            <dt class="col-sm-4">Sexo:</dt>
+                            <dd class="col-sm-8">
+                                {% if animal.sexo == 'macho' %}
+                                    <span class="badge bg-primary">Macho</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Fêmea</span>
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-4">Data de Abate:</dt>
+                            <dd class="col-sm-8">{{ animal.data_abate|date:"d/m/Y" }}</dd>
+                            
+                            <dt class="col-sm-4">Ordem de Abate:</dt>
+                            <dd class="col-sm-8">{{ animal.ordem_abate|default:"Não definida" }}</dd>
+                            
+                            <dt class="col-sm-4">GTA:</dt>
+                            <dd class="col-sm-8">{{ animal.gta }}</dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4>Status</h4>
+                        <dl class="row">
+                            <dt class="col-sm-4">Avaliação:</dt>
+                            <dd class="col-sm-8">
+                                {% if animal.status_avaliacao == 'nao_avaliado' %}
+                                    <span class="badge bg-warning text-dark">Não Avaliado</span>
+                                {% elif animal.status_avaliacao == 'apto' %}
+                                    <span class="badge bg-success">Apto</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inapto</span>
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-4">Data da Avaliação:</dt>
+                            <dd class="col-sm-8">{{ animal.data_avaliacao|date:"d/m/Y H:i"|default:"Não avaliado" }}</dd>
+                            
+                            <dt class="col-sm-4">Classificação:</dt>
+                            <dd class="col-sm-8">
+                                {% if animal.tipo_animal and animal.qualidade %}
+                                    <span class="badge bg-info">
+                                        {{ animal.get_tipo_animal_display }} - {{ animal.get_qualidade_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não classificado</span>
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-4">Data da Classificação:</dt>
+                            <dd class="col-sm-8">{{ animal.data_classificacao|date:"d/m/Y H:i"|default:"Não classificado" }}</dd>
+                            
+                            <dt class="col-sm-4">Peso (kg):</dt>
+                            <dd class="col-sm-8">{% if peso_total is not None %}{{ peso_total|floatformat:2 }}{% else %}Não informado{% endif %}</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                {% if animal.status_avaliacao != 'nao_avaliado' %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4>Avaliação Detalhada</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="accordion" id="avaliacaoAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="viscerasVermelhasHeading">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#viscerasVermelhas" aria-expanded="true" aria-controls="viscerasVermelhas">
+                                                Vísceras Vermelhas
+                                            </button>
+                                        </h2>
+                                        <div id="viscerasVermelhas" class="accordion-collapse collapse show" aria-labelledby="viscerasVermelhasHeading">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <dl class="row">
+                                                            <dt class="col-sm-4">Condição Geral:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_condicao_geral_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Carcaça:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_carcassa_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Fígado:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_figado_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Coração:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_coracao_display|default:"Não avaliado" }}</dd>
+                                                        </dl>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <dl class="row">
+                                                            <dt class="col-sm-4">Pulmões:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_pulmoes_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Rins:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_rins_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Diafragma:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_diafragma_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Língua:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_lingua_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Cabeça:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_cabeca_display|default:"Não avaliado" }}</dd>
+                                                        </dl>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="viscerasBrancasHeading">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#viscerasBrancas" aria-expanded="false" aria-controls="viscerasBrancas">
+                                                Vísceras Brancas
+                                            </button>
+                                        </h2>
+                                        <div id="viscerasBrancas" class="accordion-collapse collapse" aria-labelledby="viscerasBrancasHeading">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <dl class="row">
+                                                            <dt class="col-sm-4">Útero:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_utero_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Baço/Pâncreas:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_baco_pancreas_display|default:"Não avaliado" }}</dd>
+                                                        </dl>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <dl class="row">
+                                                            <dt class="col-sm-4">Intestino/Estômagos/Bexiga:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_intestino_estomagos_bexiga_display|default:"Não avaliado" }}</dd>
+                                                            
+                                                            <dt class="col-sm-4">Glândula Mamária:</dt>
+                                                            <dd class="col-sm-8">{{ animal.get_glandula_mamaria_display|default:"Não avaliado" }}</dd>
+                                                        </dl>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if animal.observacoes_avaliacao %}
+                                <div class="mt-3">
+                                    <h5>Observações da Avaliação</h5>
+                                    <p class="border p-3 rounded">{{ animal.observacoes_avaliacao }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if animal.tipo_animal %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4>Classificação</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-3">Tipo de Animal:</dt>
+                                    <dd class="col-sm-9">{{ animal.get_tipo_animal_display }}</dd>
+                                    
+                                    <dt class="col-sm-3">Qualidade:</dt>
+                                    <dd class="col-sm-9">{{ animal.get_qualidade_display }}</dd>
+                                    
+                                    <dt class="col-sm-3">Peso (kg):</dt>
+                                    <dd class="col-sm-9">{% if peso_total is not None %}{{ peso_total|floatformat:2 }}{% else %}Não informado{% endif %}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if animal.meiacarcaça_set.exists %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4>Estoque e Vendas</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Lado</th>
+                                                <th>Trilho</th>
+                                                <th>Gancho</th>
+                                                <th>Peso (kg)</th>
+                                                <th>Data Entrada</th>
+                                                <th>Status</th>
+                                                <th>Comprador</th>
+                                                <th>Data Venda</th>
+                                                <th>Preço/kg</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for meia in animal.meiacarcaça_set.all %}
+                                            <tr>
+                                                <td>{{ meia.get_lado_display }}</td>
+                                                <td>{{ meia.posicao_trilho }}</td>
+                                                <td>{{ meia.posicao_gancho }}</td>
+                                                <td>{{ meia.peso }}</td>
+                                                <td>{{ meia.data_entrada_estoque|date:"d/m/Y H:i" }}</td>
+                                                <td>
+                                                    {% if meia.esta_vendida %}
+                                                        <span class="badge bg-success">Vendido</span>
+                                                    {% else %}
+                                                        <span class="badge bg-primary">Disponível</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ meia.comprador|default:"-" }}</td>
+                                                <td>
+                                                    {% if meia.data_venda %}
+                                                        {{ meia.data_venda|date:"d/m/Y H:i" }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if meia.preco_kg %}
+                                                        R$ {{ meia.preco_kg }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="{% url 'relatorio_diario' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Voltar ao Relatório
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

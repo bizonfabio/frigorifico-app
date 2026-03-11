@@ -1,0 +1,47 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Registro de GTA - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Registro de Animais - Informe o GTA</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="gta" class="form-label">Número do GTA:</label>
+                        <input type="text" class="form-control" id="gta" name="gta" required>
+                        <div class="form-text">Informe o número do Guia de Trânsito Animal (GTA)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="quantidade" class="form-label">Quantidade de Animais:</label>
+                        <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'registro_inicial' %}" class="btn btn-secondary">Voltar</a>
+                        <button type="submit" class="btn btn-primary">Continuar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Instruções</h5>
+                <p>Antes de registrar os animais, você precisa informar:</p>
+                <ul>
+                    <li>O número do GTA (Guia de Trânsito Animal)</li>
+                    <li>A quantidade de animais que deseja registrar</li>
+                </ul>
+                <p>Após preencher essas informações, você será direcionado para o formulário de registro dos animais.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

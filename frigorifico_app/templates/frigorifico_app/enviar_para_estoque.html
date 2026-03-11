@@ -1,0 +1,92 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Enviar para Estoque - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Enviar Animal para Estoque</h2>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-4">Animal: {{ animal.numero_brinco }}</h4>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Informações do Animal</h5>
+                                <p><strong>Produtor:</strong> {{ animal.nome_produtor }}</p>
+                                <p><strong>Sexo:</strong> 
+                                    {% if animal.sexo == 'macho' %}
+                                        <span class="badge bg-primary">Macho</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Fêmea</span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>Data de Abate:</strong> {{ animal.data_abate|date:"d/m/Y" }}</p>
+                                <p><strong>GTA:</strong> {{ animal.gta }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Classificação</h5>
+                                <p><strong>Tipo:</strong> {{ animal.tipo_animal|title }}</p>
+                                <p><strong>Qualidade:</strong> {{ animal.qualidade|title }}</p>
+                                {% if animal.peso %}
+                                    <p><strong>Peso Anterior:</strong> {{ animal.peso }} kg</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="trilho" class="form-label">Trilho:</label>
+                                <input type="text" class="form-control" id="trilho" name="trilho" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="gancho_inicio" class="form-label">Gancho Inicial:</label>
+                                <input type="number" class="form-control" id="gancho_inicio" name="gancho_inicio" min="1" required>
+                                <div class="form-text">Serão utilizados dois ganchos consecutivos a partir do número informado.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="peso" class="form-label">Peso Total do Animal (kg):</label>
+                                <input type="number" class="form-control" id="peso" name="peso" step="0.01" min="0.01" required>
+                                <div class="form-text">O peso será dividido igualmente entre as duas meias carcaças.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5>Informações importantes:</h5>
+                        <ul>
+                            <li>O sistema utilizará dois ganchos consecutivos a partir do número informado</li>
+                            <li>Cada meia carcaça receberá 50% do peso total informado</li>
+                            <li>Não é permitido inserir duas meias carcaças no mesmo gancho</li>
+                            <li>O peso é obrigatório para inserção no estoque</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'lista_animais_para_estoque' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Enviar para Estoque</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
