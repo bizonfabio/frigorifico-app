@@ -246,15 +246,22 @@ class MeiaCarcaça(models.Model):
     data_venda = models.DateTimeField(blank=True, null=True)
     preco_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
+    # Saída do estoque (tirar do trilho libera o gancho para outro uso)
+    data_saida_estoque = models.DateTimeField(blank=True, null=True)
+    
+    def esta_em_estoque(self):
+        """True se ainda ocupa o gancho no trilho (não foi dada saída)."""
+        return self.data_saida_estoque is None
+    
     def clean(self):
-        # Verificar se já existe uma meia carcaça nessa posição
-        if not self.pk:  # Apenas para criação, não para atualização
-            queryset = MeiaCarcaça.objects.filter(
-                posicao_trilho=self.posicao_trilho,
-                posicao_gancho=self.posicao_gancho
-            )
-            if queryset.exists():
-                raise ValidationError(f"Já existe uma meia carcaça no trilho {self.posicao_trilho} e gancho {self.posicao_gancho}")
+        # Verificar se já existe uma meia carcaça nessa posição (apenas as que ainda estão em estoque)
+        queryset = MeiaCarcaça.objects.filter(
+            posicao_trilho=self.posicao_trilho,
+            posicao_gancho=self.posicao_gancho,
+            data_saida_estoque__isnull=True
+        ).exclude(pk=self.pk)
+        if queryset.exists():
+            raise ValidationError(f"Já existe uma meia carcaça no trilho {self.posicao_trilho} e gancho {self.posicao_gancho}")
 
         # Verificar se o peso foi fornecido
         if not self.peso:

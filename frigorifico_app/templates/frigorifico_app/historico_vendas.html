@@ -1,0 +1,73 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Histórico de Vendas - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h2 class="mb-0">Histórico de vendas</h2>
+                <a href="{% url 'pesquisar_animais_venda' %}" class="btn btn-outline-primary btn-sm">Pesquisar para vender</a>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Registro de todas as vendas. Itens retirados do estoque permanecem apenas aqui e no banco de dados.</p>
+                {% if vendas %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Data venda</th>
+                                <th>Brinco</th>
+                                <th>Produtor</th>
+                                <th>Lado</th>
+                                <th>Trilho / Gancho</th>
+                                <th>Peso (kg)</th>
+                                <th>Comprador</th>
+                                <th>Preço/kg</th>
+                                <th>Saída estoque</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for meia in vendas %}
+                            <tr>
+                                <td>{{ meia.data_venda|date:"d/m/Y H:i" }}</td>
+                                <td>{{ meia.bovino.numero_brinco }}</td>
+                                <td>{{ meia.bovino.nome_produtor }}</td>
+                                <td>{{ meia.get_lado_display }}</td>
+                                <td>{{ meia.posicao_trilho }} / {{ meia.posicao_gancho }}</td>
+                                <td>{{ meia.peso }}</td>
+                                <td>{{ meia.comprador }}</td>
+                                <td>{% if meia.preco_kg %}R$ {{ meia.preco_kg|floatformat:2 }}{% else %}-{% endif %}</td>
+                                <td>
+                                    {% if meia.esta_em_estoque %}
+                                        <span class="badge bg-info">Ainda no trilho</span>
+                                        <form method="post" action="{% url 'tirar_do_estoque' meia.id %}" class="d-inline mt-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-warning">Tirar do estoque</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Retirada</span>
+                                        <small class="d-block">{{ meia.data_saida_estoque|date:"d/m/Y H:i" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'detalhes_animal' meia.bovino.id %}" class="btn btn-sm btn-outline-primary">Ver animal</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <h4 class="alert-heading">Nenhuma venda registrada</h4>
+                    <p class="mb-0">As vendas aparecerão aqui após o registro. Use <a href="{% url 'pesquisar_animais_venda' %}">Vendas</a> para registrar.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

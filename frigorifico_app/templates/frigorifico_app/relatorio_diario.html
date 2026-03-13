@@ -107,9 +107,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'detalhes_animal' animal.id %}" class="btn btn-sm btn-info">
-                                        Detalhes
-                                    </a>
+                                    <a href="{% url 'detalhes_animal' animal.id %}" class="btn btn-sm btn-info">Detalhes</a>
+                                    <a href="{% url 'editar_animal' animal.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
                                 </td>
                             </tr>
                             {% endfor %}

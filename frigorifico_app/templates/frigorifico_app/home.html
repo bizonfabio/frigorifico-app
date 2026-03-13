@@ -1,141 +1,79 @@
 {% extends 'frigorifico_app/base.html' %}
 
-{% block title %}Home - Frigorífico{% endblock %}
+{% block title %}Início - Frigorífico{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">Animais Registrados</h2>
+<div class="page-header mb-4">
+    <h1 class="page-title">Início</h1>
+    <p class="page-lead">Resumo por data de abate</p>
+</div>
+
+<div class="card card-modern">
+    <div class="card-body">
+        <form method="post" class="row g-3 align-items-end mb-0">
+            {% csrf_token %}
+            <div class="col-auto">
+                <label for="data_selecionada" class="form-label">Data de abate</label>
+                <input type="date" class="form-control form-control-modern" id="data_selecionada" name="data_selecionada" value="{{ data_selecionada|date:'Y-m-d' }}">
             </div>
-            <div class="card-body">
-                <form method="post" class="mb-4">
-                    {% csrf_token %}
-                    <div class="row g-3 align-items-center">
-                        <div class="col-auto">
-                            <label for="data_selecionada" class="col-form-label">Data de Abate:</label>
-                        </div>
-                        <div class="col-auto">
-                            <input type="date" class="form-control" id="data_selecionada" name="data_selecionada" value="{{ data_selecionada|date:'Y-m-d' }}">
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">Filtrar</button>
-                        </div>
-                        <div class="col-auto">
-                            <a href="/" class="btn btn-outline-secondary">Hoje</a>
-                        </div>
-                    </div>
-                </form>
-                
-                <div class="alert alert-info">
-                    <strong>Data selecionada:</strong> {{ data_selecionada|date:"d/m/Y" }}
-                    <strong>Total de animais:</strong> {{ total_animais }}
-                </div>
-                
-                {% if animais %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Ordem Abate</th>
-                                <th>Número do Brinco</th>
-                                <th>Produtor</th>
-                                <th>Sexo</th>
-                                <th>Data de Abate</th>
-                                <th>GTA</th>
-                                <th>Status Avaliação</th>
-                                <th>Classificação</th>
-                                <th>Estoque</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for animal in animais %}
-                            <tr>
-                                <td>{{ animal.ordem_abate|default:"-" }}</td>
-                                <td>{{ animal.numero_brinco }}</td>
-                                <td>{{ animal.nome_produtor }}</td>
-                                <td>
-                                    {% if animal.sexo == 'macho' %}
-                                        <span class="badge bg-primary">Macho</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Fêmea</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ animal.data_abate|date:"d/m/Y" }}</td>
-                                <td>{{ animal.gta }}</td>
-                                <td>
-                                    {% if animal.status_avaliacao == 'nao_avaliado' %}
-                                        <span class="badge bg-warning text-dark">Não Avaliado</span>
-                                    {% elif animal.status_avaliacao == 'apto' %}
-                                        <span class="badge bg-success">Apto</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Inapto</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if animal.tipo_animal and animal.qualidade %}
-                                        <span class="badge bg-info">
-                                            {{ animal.tipo_animal|title }} - {{ animal.qualidade|title }}
-                                        </span>
-                                    {% elif animal.status_avaliacao == 'apto' %}
-                                        <span class="badge bg-warning text-dark">Aguardando Classificação</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Não Aplicável</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if animal.meiacarcaça_set.exists %}
-                                        <span class="badge bg-success">Em Estoque</span>
-                                    {% elif animal.tipo_animal and animal.qualidade %}
-                                        <span class="badge bg-warning text-dark">Aguardando Estoque</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Não Aplicável</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="alert alert-warning text-center">
-                    <h4 class="alert-heading">Nenhum animal encontrado</h4>
-                    <p>Não há animais registrados para a data selecionada.</p>
-                </div>
-                {% endif %}
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-modern">Filtrar</button>
             </div>
+            <div class="col-auto">
+                <a href="/" class="btn btn-outline-secondary btn-modern">Hoje</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card card-modern">
+    <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <div>
+                <span class="text-muted">{{ data_selecionada|date:"d/m/Y" }}</span>
+                <h2 class="summary-number mb-0">{{ total_animais }}</h2>
+                <span class="text-muted">animais</span>
+            </div>
+            <a href="{% url 'relatorio_diario' %}?data_selecionada={{ data_selecionada|date:'Y-m-d' }}" class="btn btn-primary btn-modern">
+                Ver relatório completo
+            </a>
         </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Registrar Novos Animais</h5>
-                        <p class="card-text">Clique no botão abaixo para registrar novos animais para abate.</p>
-                        <a href="{% url 'registro_inicial' %}" class="btn btn-success btn-lg">Registrar Animais</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Avaliar Animais</h5>
-                        <p class="card-text">Avalie animais para verificar se estão aptos para comercialização.</p>
-                        <a href="{% url 'lista_animais_para_avaliacao' %}" class="btn btn-primary btn-lg">Avaliar Animais</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Classificar Animais</h5>
-                        <p class="card-text">Classifique animais aprovados com tipo, qualidade e peso.</p>
-                        <a href="{% url 'lista_animais_para_classificacao' %}" class="btn btn-info btn-lg">Classificar Animais</a>
-                    </div>
-                </div>
-            </div>
+        {% if animais %}
+        <p class="text-muted small mb-0">Lista resumida. Use o relatório diário para detalhes e ações.</p>
+        <div class="table-responsive mt-3">
+            <table class="table table-modern table-sm">
+                <thead>
+                    <tr>
+                        <th>Brinco</th>
+                        <th>Produtor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for animal in animais|slice:":10" %}
+                    <tr>
+                        <td><a href="{% url 'detalhes_animal' animal.id %}" class="text-decoration-none">{{ animal.numero_brinco }}</a></td>
+                        <td>{{ animal.nome_produtor }}</td>
+                        <td>
+                            {% if animal.status_avaliacao == 'nao_avaliado' %}
+                                <span class="badge badge-warning">Não avaliado</span>
+                            {% elif animal.status_avaliacao == 'apto' %}
+                                <span class="badge badge-success">Apto</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inapto</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        {% if animais|length > 10 %}
+        <p class="text-muted small mt-2">Mostrando 10 de {{ animais|length }}. <a href="{% url 'relatorio_diario' %}">Ver todos</a></p>
+        {% endif %}
+        {% else %}
+        <p class="text-muted mb-0">Nenhum animal para esta data.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

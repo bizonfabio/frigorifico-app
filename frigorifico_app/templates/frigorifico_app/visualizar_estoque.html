@@ -26,6 +26,7 @@
                                 <th>Data Entrada</th>
                                 <th>Status</th>
                                 <th>Valor (R$)</th>
+                                <th>Ação</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -52,6 +53,16 @@
                                 <td>
                                     {% if meia.esta_vendida and meia.preco_kg %}
                                         {{ meia.preco_kg|floatformat:2 }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if meia.esta_vendida %}
+                                        <form method="post" action="{% url 'tirar_do_estoque' meia.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-warning">Tirar do estoque</button>
+                                        </form>
                                     {% else %}
                                         -
                                     {% endif %}

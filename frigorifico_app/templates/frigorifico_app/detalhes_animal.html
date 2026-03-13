@@ -198,12 +198,19 @@
                 </div>
                 {% endif %}
                 
-                {% if animal.meiacarcaça_set.exists %}
+                {% if meias_em_estoque or meias_retiradas %}
                 <div class="row mb-4">
                     <div class="col-12">
                         <h4>Estoque e Vendas</h4>
+                        {% if meias_retiradas %}
+                        <div class="alert alert-secondary mb-3">
+                            {{ meias_retiradas|length }} meia(s) já retirada(s) do estoque — consultar <a href="{% url 'historico_vendas' %}">Histórico de vendas</a>.
+                        </div>
+                        {% endif %}
+                        {% if meias_em_estoque %}
                         <div class="card">
                             <div class="card-body">
+                                <p class="text-muted small mb-2">Apenas itens que ainda ocupam o trilho. Retirados aparecem no Histórico de vendas.</p>
                                 <div class="table-responsive">
                                     <table class="table table-striped">
                                         <thead>
@@ -217,10 +224,11 @@
                                                 <th>Comprador</th>
                                                 <th>Data Venda</th>
                                                 <th>Preço/kg</th>
+                                                <th>Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for meia in animal.meiacarcaça_set.all %}
+                                            {% for meia in meias_em_estoque %}
                                             <tr>
                                                 <td>{{ meia.get_lado_display }}</td>
                                                 <td>{{ meia.posicao_trilho }}</td>
@@ -249,6 +257,16 @@
                                                         -
                                                     {% endif %}
                                                 </td>
+                                                <td>
+                                                    {% if meia.esta_vendida %}
+                                                        <form method="post" action="{% url 'tirar_do_estoque' meia.id %}" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-warning">Tirar do estoque</button>
+                                                        </form>
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -256,6 +274,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
@@ -263,6 +282,9 @@
                 <div class="d-grid gap-2 d-md-flex justify-content-md-between">
                     <a href="{% url 'relatorio_diario' %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i>Voltar ao Relatório
+                    </a>
+                    <a href="{% url 'editar_animal' animal.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-1"></i>Editar animal
                     </a>
                 </div>
             </div>

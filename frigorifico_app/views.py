@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, models
@@ -14,30 +15,24 @@ import json
 
 @login_required
 def home(request):
-    # Se for POST, significa que o usuário selecionou uma data
     if request.method == 'POST':
-        data_selecionada = request.POST.get('data_selecionada')
-        if data_selecionada:
-            # Filtrar animais pela data selecionada
-            animais = Bovino.objects.filter(data_abate=data_selecionada)
+        data_str = request.POST.get('data_selecionada')
+        if data_str:
+            try:
+                data_selecionada = date.fromisoformat(data_str)
+            except ValueError:
+                data_selecionada = date.today()
         else:
-            # Se não houver data, mostrar todos os animais
-            animais = Bovino.objects.all()
-            data_selecionada = "Todos"
+            data_selecionada = date.today()
     else:
-        # Por padrão, mostrar animais com data de hoje
         data_selecionada = date.today()
-        animais = Bovino.objects.filter(data_abate=data_selecionada)
-    
-    # Contar total de animais
+    animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
     total_animais = animais.count()
-    
     contexto = {
         'animais': animais,
         'total_animais': total_animais,
         'data_selecionada': data_selecionada,
     }
-    
     return render(request, 'frigorifico_app/home.html', contexto)
 
 
@@ -417,8 +412,10 @@ def enviar_para_estoque(request, id):
 
 @login_required
 def visualizar_estoque(request):
-    # Mostrar todas as meias carcaças em estoque, ordenadas por trilho e gancho
-    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').order_by('posicao_trilho', 'posicao_gancho')
+    # Apenas meias carcaças que ainda ocupam o trilho (não foram dadas saída)
+    meias_carcaças = MeiaCarcaça.objects.filter(
+        data_saida_estoque__isnull=True
+    ).select_related('bovino').order_by('posicao_trilho', 'posicao_gancho')
     
     contexto = {
         'meias_carcaças': meias_carcaças
@@ -573,37 +570,28 @@ def atualizar_ordem_abate(request):
 
 @login_required
 def relatorio_diario(request):
-    # Obter a data selecionada ou usar a data de hoje
-    if request.method == 'POST':
-        data_selecionada_str = request.POST.get('data_selecionada')
-        data_venda_str = request.POST.get('data_venda')
-        
-        # Filtros
-        filtro_data_abate = None
-        filtro_data_venda = None
-        
-        if data_selecionada_str:
-            try:
-                # Converter string para objeto date
-                filtro_data_abate = date.fromisoformat(data_selecionada_str)
-            except ValueError:
-                # Se houver erro na conversão, usar a data de hoje
-                filtro_data_abate = date.today()
-        
-        if data_venda_str:
-            try:
-                # Converter string para objeto date
-                filtro_data_venda = date.fromisoformat(data_venda_str)
-            except ValueError:
-                pass
-        
-        # Definir qual data usar para exibição (padrão é hoje)
-        data_exibicao = filtro_data_abate if filtro_data_abate else date.today()
+    # Obter a data selecionada (POST ou GET) ou usar a data de hoje
+    data_selecionada_str = request.POST.get('data_selecionada') or request.GET.get('data_selecionada')
+    data_venda_str = request.POST.get('data_venda')
+    
+    filtro_data_abate = None
+    filtro_data_venda = None
+    
+    if request.method == 'POST' and data_venda_str:
+        try:
+            filtro_data_venda = date.fromisoformat(data_venda_str)
+        except ValueError:
+            pass
+    
+    if data_selecionada_str:
+        try:
+            filtro_data_abate = date.fromisoformat(data_selecionada_str)
+        except ValueError:
+            filtro_data_abate = date.today()
     else:
-        # Por padrão, mostrar animais com data de hoje
         filtro_data_abate = date.today()
-        filtro_data_venda = None
-        data_exibicao = date.today()
+    
+    data_exibicao = filtro_data_abate if filtro_data_abate else date.today()
     
     # Filtrar animais
     animais = Bovino.objects.all().prefetch_related('meiacarcaça_set')
@@ -640,13 +628,47 @@ def relatorio_diario(request):
 def detalhes_animal(request, id):
     animal = get_object_or_404(Bovino, id=id)
     peso_total = animal.meiacarcaça_set.aggregate(total=Sum('peso'))['total']
+    meias_em_estoque = animal.meiacarcaça_set.filter(data_saida_estoque__isnull=True)
+    meias_retiradas = animal.meiacarcaça_set.filter(data_saida_estoque__isnull=False)
     
     contexto = {
         'animal': animal,
         'peso_total': peso_total,
+        'meias_em_estoque': meias_em_estoque,
+        'meias_retiradas': meias_retiradas,
     }
     
     return render(request, 'frigorifico_app/detalhes_animal.html', contexto)
+
+
+@login_required
+def editar_animal(request, id):
+    animal = get_object_or_404(Bovino, id=id)
+    if request.method == 'POST':
+        numero_brinco = request.POST.get('numero_brinco', '').strip()
+        nome_produtor = request.POST.get('nome_produtor', '').strip()
+        sexo = request.POST.get('sexo')
+        data_abate = request.POST.get('data_abate')
+        gta = request.POST.get('gta', '').strip()
+        if not numero_brinco or not nome_produtor or not sexo or not data_abate or not gta:
+            messages.error(request, 'Preencha todos os campos obrigatórios.')
+            return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
+        if numero_brinco != animal.numero_brinco and Bovino.objects.filter(numero_brinco=numero_brinco).exclude(id=animal.id).exists():
+            messages.error(request, f'Já existe um animal com o brinco {numero_brinco}.')
+            return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
+        animal.numero_brinco = numero_brinco
+        animal.nome_produtor = nome_produtor
+        animal.sexo = sexo
+        animal.data_abate = data_abate
+        animal.gta = gta
+        try:
+            animal.save()
+            messages.success(request, f'Animal {animal.numero_brinco} atualizado com sucesso.')
+            return redirect('detalhes_animal', id=animal.id)
+        except IntegrityError:
+            messages.error(request, 'Número de brinco já existe para outro animal.')
+            return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
+    return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
 
 
 @login_required
@@ -758,3 +780,37 @@ def registrar_venda(request, id):
     }
     
     return render(request, 'frigorifico_app/registrar_venda.html', contexto)
+
+
+@login_required
+def tirar_do_estoque(request, id):
+    """Registra saída da meia carcaça do estoque (libera o gancho no trilho). Só para itens vendidos."""
+    meia = get_object_or_404(MeiaCarcaça, id=id)
+    if not meia.esta_vendida():
+        messages.error(request, 'Apenas itens com venda confirmada podem ser tirados do estoque.')
+        return redirect(request.META.get('HTTP_REFERER') or reverse('visualizar_estoque'))
+    if not meia.esta_em_estoque():
+        messages.info(request, 'Esta meia carcaça já foi dada saída do estoque.')
+        return redirect(request.META.get('HTTP_REFERER') or reverse('visualizar_estoque'))
+    if request.method == 'POST':
+        meia.data_saida_estoque = timezone.now()
+        meia.save()
+        messages.success(request, f'Trilho {meia.posicao_trilho}, gancho {meia.posicao_gancho} liberado. Saída registrada.')
+        next_url = request.META.get('HTTP_REFERER') or reverse('visualizar_estoque')
+        return redirect(next_url)
+    # GET: redirecionar para evitar saída acidental
+    return redirect('visualizar_estoque')
+
+
+@login_required
+def historico_vendas(request):
+    """Lista todas as vendas (meias carcaças vendidas). Único lugar para ver itens já retirados do estoque."""
+    vendas = MeiaCarcaça.objects.filter(
+        data_venda__isnull=False
+    ).select_related('bovino').order_by('-data_venda')
+    
+    contexto = {
+        'vendas': vendas
+    }
+    
+    return render(request, 'frigorifico_app/historico_vendas.html', contexto)

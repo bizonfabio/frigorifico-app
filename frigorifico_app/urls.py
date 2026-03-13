@@ -37,8 +37,11 @@ urlpatterns = [
     path('atualizar-ordem-abate/', views.atualizar_ordem_abate, name='atualizar_ordem_abate'),
     path('relatorio-diario/', views.relatorio_diario, name='relatorio_diario'),
     path('detalhes-animal/<int:id>/', views.detalhes_animal, name='detalhes_animal'),
+    path('editar-animal/<int:id>/', views.editar_animal, name='editar_animal'),
     path('pesquisar-animais-venda/', views.pesquisar_animais_venda, name='pesquisar_animais_venda'),
     path('registrar-venda/<int:id>/', views.registrar_venda, name='registrar_venda'),
+    path('tirar-do-estoque/<int:id>/', views.tirar_do_estoque, name='tirar_do_estoque'),
+    path('historico-vendas/', views.historico_vendas, name='historico_vendas'),
     
     # URLs de autenticação
     path('login/', auth_views.LoginView.as_view(template_name='frigorifico_app/login.html'), name='login'),

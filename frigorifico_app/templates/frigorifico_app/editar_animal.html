@@ -1,0 +1,54 @@
+{% extends 'frigorifico_app/base.html' %}
+
+{% block title %}Editar Animal - Frigorífico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Editar Animal</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_brinco" class="form-label">Número do Brinco:</label>
+                                <input type="text" class="form-control" id="numero_brinco" name="numero_brinco" value="{{ animal.numero_brinco }}" required>
+                                <div class="form-text">Deve ser único no sistema.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nome_produtor" class="form-label">Nome do Produtor:</label>
+                                <input type="text" class="form-control" id="nome_produtor" name="nome_produtor" value="{{ animal.nome_produtor }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="sexo" class="form-label">Sexo:</label>
+                                <select class="form-select" id="sexo" name="sexo" required>
+                                    <option value="macho" {% if animal.sexo == 'macho' %}selected{% endif %}>Macho</option>
+                                    <option value="femea" {% if animal.sexo == 'femea' %}selected{% endif %}>Fêmea</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_abate" class="form-label">Data de Abate:</label>
+                                <input type="date" class="form-control" id="data_abate" name="data_abate" value="{{ animal.data_abate|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="gta" class="form-label">GTA:</label>
+                                <input type="text" class="form-control" id="gta" name="gta" value="{{ animal.gta }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                        <a href="{% url 'detalhes_animal' animal.id %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
