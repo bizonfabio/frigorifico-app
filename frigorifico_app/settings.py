@@ -33,6 +33,11 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '.vercel.app,.now.sh,localhost,127.0.0.1').split(',')
 
+# Origens permitidas para CSRF (obrigatório no Django 4+ em produção)
+# No Vercel: defina CSRF_TRUSTED_ORIGINS com a URL do app, ex: https://seu-app.vercel.app
+_csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [x.strip() for x in _csrf_origins.split(',') if x.strip()]
+
 
 # Application definition
 
