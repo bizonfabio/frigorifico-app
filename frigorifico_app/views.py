@@ -679,34 +679,44 @@ def pesquisar_animais_venda(request):
     resultados_encontrados = False
     
     if request.method == 'POST':
-        # Obter parâmetros de pesquisa
-        tipo = request.POST.get('tipo')
-        qualidade = request.POST.get('qualidade')
-        peso_min = request.POST.get('peso_min')
-        peso_max = request.POST.get('peso_max')
-        
-        # Construir consulta
-        meias_carcaças = MeiaCarcaça.objects.select_related('bovino').filter(
-            bovino__tipo_animal__isnull=False,
-            bovino__qualidade__isnull=False,
-            data_venda__isnull=True  # Apenas meias carcaças não vendidas
-        )
-        
-        if tipo:
-            meias_carcaças = meias_carcaças.filter(bovino__tipo_animal=tipo)
-        
-        if qualidade:
-            meias_carcaças = meias_carcaças.filter(bovino__qualidade=qualidade)
-        
-        if peso_min:
-            meias_carcaças = meias_carcaças.filter(peso__gte=peso_min)
-        
-        if peso_max:
-            meias_carcaças = meias_carcaças.filter(peso__lte=peso_max)
-        
-        meias_carcaças = meias_carcaças.order_by('bovino__tipo_animal', 'bovino__qualidade', 'peso')
-        pesquisa_realizada = True
-        resultados_encontrados = meias_carcaças.exists()
+        try:
+            tipo = request.POST.get('tipo', '').strip()
+            qualidade = request.POST.get('qualidade', '').strip()
+            peso_min_raw = request.POST.get('peso_min', '').strip()
+            peso_max_raw = request.POST.get('peso_max', '').strip()
+            
+            # Base: não vendidas e ainda em estoque (no trilho)
+            meias_carcaças = MeiaCarcaça.objects.select_related('bovino').filter(
+                bovino__tipo_animal__isnull=False,
+                bovino__qualidade__isnull=False,
+                data_venda__isnull=True,
+                data_saida_estoque__isnull=True
+            )
+            
+            if tipo:
+                meias_carcaças = meias_carcaças.filter(bovino__tipo_animal=tipo)
+            
+            if qualidade:
+                meias_carcaças = meias_carcaças.filter(bovino__qualidade=qualidade)
+            
+            if peso_min_raw:
+                try:
+                    peso_min = Decimal(peso_min_raw.replace(',', '.'))
+                    meias_carcaças = meias_carcaças.filter(peso__gte=peso_min)
+                except (ValueError, Exception):
+                    pass
+            if peso_max_raw:
+                try:
+                    peso_max = Decimal(peso_max_raw.replace(',', '.'))
+                    meias_carcaças = meias_carcaças.filter(peso__lte=peso_max)
+                except (ValueError, Exception):
+                    pass
+            
+            meias_carcaças = meias_carcaças.order_by('bovino__tipo_animal', 'bovino__qualidade', 'peso')
+            pesquisa_realizada = True
+            resultados_encontrados = meias_carcaças.exists()
+        except Exception as e:
+            messages.error(request, f'Erro ao pesquisar: {str(e)}')
     
     contexto = {
         'meias_carcaças': meias_carcaças,
