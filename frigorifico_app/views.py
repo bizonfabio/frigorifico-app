@@ -215,32 +215,23 @@ def avaliar_animal(request, id):
         animal.glandula_mamaria = request.POST.get('glandula_mamaria')
         
         animal.observacoes_avaliacao = request.POST.get('observacoes_avaliacao')
-        
-        # Verificar se todas as partes foram avaliadas
+
         partes_vermelhas = [animal.condicao_geral, animal.carcassa, animal.figado, animal.coracao,
                             animal.pulmoes, animal.rins, animal.diafragma, animal.lingua, animal.cabeca]
-        
-        partes_brancas = [animal.utero, animal.baco_pancreas, animal.intestino_estomagos_bexiga, 
+        partes_brancas = [animal.utero, animal.baco_pancreas, animal.intestino_estomagos_bexiga,
                           animal.glandula_mamaria]
-        
-        # Verificar se todas as partes foram preenchidas
-        todas_partes_preenchidas = all(partes_vermelhas) and all(partes_brancas)
-        
+        todas_partes_preenchidas = all(p and str(p).strip() for p in partes_vermelhas + partes_brancas)
+
         if not todas_partes_preenchidas:
-            messages.error(request, 'Por favor, avalie todas as partes do animal (vísceras vermelhas e brancas) antes de finalizar.')
+            messages.error(request, 'Todos os campos de avaliação (vísceras vermelhas e brancas) são obrigatórios. Preencha todas as partes antes de finalizar.')
             contexto = {
                 'animal': animal,
                 'opcoes': opcoes
             }
             return render(request, 'frigorifico_app/avaliar_animal.html', contexto)
-        
-        # Determinar status da avaliação com base nas seleções
-        # Se alguma parte tiver uma condição diferente de "Aprovado", o animal é inapto
-        condenado = False
-        for parte in partes_vermelhas + partes_brancas:
-            if parte and parte != 'Aprovado':
-                condenado = True
-                break
+
+        # Determinar status da avaliação: se alguma parte diferente de "Aprovado" -> inapto
+        condenado = any(p != 'Aprovado' for p in partes_vermelhas + partes_brancas)
         
         # Definir status da avaliação
         if condenado:

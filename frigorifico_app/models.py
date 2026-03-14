@@ -14,33 +14,55 @@ class Bovino(models.Model):
         ('inapto', 'Inapto'),
     ]
     
+    # Vísceras Vermelhas - Condição Geral (sem Aprovado na lista do usuário; adicionado para opção "ok")
     CONDICAO_GERAL_CHOICES = [
+        ('Aprovado', 'Aprovado'),
         ('Condenação Total', 'Condenação Total'),
-        ('Condenação Parcial', 'Condenação Parcial'),
         ('Em Inspeção', 'Em Inspeção'),
-        ('Aprovado', 'Aprovado'),
-
+        ('Condenação Parcial', 'Condenação Parcial'),
     ]
-    
-    CARCASSA_CHOICES = [
+
+    CABECA_CHOICES = [
         ('Aprovado', 'Aprovado'),
-        ('Abscesso', 'Abscesso'),
+        ('Cont. Gastro/Biliar', 'Cont. Gastro/Biliar'),
         ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
         ('Cisticercose Viva', 'Cisticercose Viva'),
-        ('Hemorragias', 'Hemorragias'),
-        ('Cont. Gastro/biliar', 'Cont. Gastro/biliar'),
-        ('Aderência', 'Aderência'),
-        ('Artrite', 'Artrite'),
-        ('Aspecto Repugnante', 'Aspecto Repugnante'),
-        ('Neoplasia', 'Neoplasia'),
-        ('Magreza', 'Magreza'),
-        ('Evisceração Retardada', 'Evisceração Retardada'),
-        ('Contusão/Fratura', 'Contusão/Fratura'),
-        ('Icterícia', 'Icterícia'),
-        ('Adenite', 'Adenite'),
-
     ]
-    
+
+    LINGUA_CHOICES = [
+        ('Aprovado', 'Aprovado'),
+        ('Cont. Gastro/Biliar', 'Cont. Gastro/Biliar'),
+        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Cisticercose Viva', 'Cisticercose Viva'),
+        ('Actinobacilose', 'Actinobacilose'),
+    ]
+
+    CORACAO_CHOICES = [
+        ('Aprovado', 'Aprovado'),
+        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Cisticercose Viva', 'Cisticercose Viva'),
+        ('Pericardite', 'Pericardite'),
+        ('Endocardite', 'Endocardite'),
+        ('Hidatidose', 'Hidatidose'),
+        ('Melanose', 'Melanose'),
+        ('Sarcosporidiose', 'Sarcosporidiose'),
+    ]
+
+    PULMOES_CHOICES = [
+        ('Aprovado', 'Aprovado'),
+        ('Aspiração Sangue', 'Aspiração Sangue'),
+        ('Apiração de Vomito', 'Apiração de Vomito'),
+        ('Aderência', 'Aderência'),
+        ('Pleuropneumonia', 'Pleuropneumonia'),
+        ('Abscesso', 'Abscesso'),
+        ('Bronquite', 'Bronquite'),
+        ('Enfisema', 'Enfisema'),
+        ('Hidatidose', 'Hidatidose'),
+        ('Tuberculose(lesão sugestiva)', 'Tuberculose(lesão sugestiva)'),
+        ('Neoplasia', 'Neoplasia'),
+        ('Melanose', 'Melanose'),
+    ]
+
     FIGADO_CHOICES = [
         ('Aprovado', 'Aprovado'),
         ('Abcessos Múltiplos', 'Abcessos Múltiplos'),
@@ -52,35 +74,18 @@ class Bovino(models.Model):
         ('Cisticercose Viva', 'Cisticercose Viva'),
         ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
         ('Hidatidose', 'Hidatidose'),
-
     ]
-    
-    CORACAO_CHOICES = [
+
+    DIAFRAGMA_CHOICES = [
         ('Aprovado', 'Aprovado'),
-        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Aderência', 'Aderência'),
         ('Cisticercose Viva', 'Cisticercose Viva'),
-        ('Pericardite', 'Pericardite'),
-        ('Endocardite', 'Endocardite'),
-        ('Hidatidose', 'Hidatidose'),
-        ('Melanose', 'Melanose'),
+        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Perihepatite', 'Perihepatite'),
+        ('Icterícia', 'Icterícia'),
         ('Sarcosporidiose', 'Sarcosporidiose'),
     ]
-    
-    PULMOES_CHOICES = [
-        ('Aprovado', 'Aprovado'),
-        ('Aspiração Sangue', 'Aspiração Sangue'),
-        ('Apiração de Vomito', 'Apiração de Vomito'),
-        ('Aderência', 'Aderência'),
-        ('Pleuropneumonia Abscesso', 'Pleuropneumonia Abscesso'),
-        ('Bronquite', 'Bronquite'),
-        ('Enfisema', 'Enfisema'),
-        ('Hidatidose', 'Hidatidose'),
-        ('Tuberculose(lesão sugestiva)', 'Tuberculose(lesão sugestiva)'),
-        ('Neoplasia', 'Neoplasia'),
-        ('Melanose', 'Melanose'),
 
-    ]
-    
     RINS_CHOICES = [
         ('Aprovado', 'Aprovado'),
         ('Cisto Urinário', 'Cisto Urinário'),
@@ -89,34 +94,27 @@ class Bovino(models.Model):
         ('Neoplasia', 'Neoplasia'),
         ('Hidronefrose/Uronefrose', 'Hidronefrose/Uronefrose'),
         ('Nefrite', 'Nefrite'),
-
     ]
-    
-    DIAFRAGMA_CHOICES = [
+
+    CARCASSA_CHOICES = [
         ('Aprovado', 'Aprovado'),
-        ('Aderência', 'Aderência'),
-        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Abscessos', 'Abscessos'),
         ('Cisticercose Viva', 'Cisticercose Viva'),
-        ('Cisticercose', 'Cisticercose'),
-        ('Perihepatite', 'Perihepatite'),
-        ('Icterícia', 'Icterícia'),
+        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
+        ('Hemorragias', 'Hemorragias'),
+        ('Cont. Gastro/biliar', 'Cont. Gastro/biliar'),
+        ('Aderencia', 'Aderencia'),
+        ('Artrite', 'Artrite'),
+        ('Aspecto repugnante', 'Aspecto repugnante'),
+        ('Neoplasia', 'Neoplasia'),
+        ('Magreza', 'Magreza'),
+        ('Evisceração Retardada', 'Evisceração Retardada'),
+        ('Peritonite', 'Peritonite'),
+        ('Caquexia', 'Caquexia'),
         ('Sarcosporidiose', 'Sarcosporidiose'),
-    ]
-    
-    LINGUA_CHOICES = [
-        ('Aprovado', 'Aprovado'),
-        ('Cont. Gastro/Biliar', 'Cont. Gastro/Biliar'),
-        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
-        ('Cisticercose Viva', 'Cisticercose Viva'),
-        ('Actinobacilose', 'Actinobacilose'),
-
-    ]
-    
-    CABECA_CHOICES = [
-        ('Aprovado', 'Aprovado'),
-        ('Cont. Gastro/Biliar', 'Cont. Gastro/Biliar'),
-        ('Cisticercose Calcificada', 'Cisticercose Calcificada'),
-        ('Cisticercose Viva', 'Cisticercose Viva'),
+        ('Contusão/Fratura', 'Contusão/Fratura'),
+        ('Icterícia', 'Icterícia'),
+        ('Adenite', 'Adenite'),
     ]
     
     TIPO_ANIMAL_CHOICES = [
@@ -142,7 +140,7 @@ class Bovino(models.Model):
         ('Abscesso', 'Abscesso'),
         ('Prenha', 'Prenha'),
     ]
-    
+
     BAÇO_PANCREAS_CHOICES = [
         ('Aprovado', 'Aprovado'),
         ('Abscesso', 'Abscesso'),
@@ -151,7 +149,7 @@ class Bovino(models.Model):
         ('Euritrema', 'Euritrema'),
         ('Aderencia', 'Aderencia'),
     ]
-    
+
     INTESTINO_ESTOMAGOS_BEXIGA_CHOICES = [
         ('Aprovado', 'Aprovado'),
         ('Abscessos', 'Abscessos'),
@@ -160,11 +158,11 @@ class Bovino(models.Model):
         ('Tuberculose(Lesão Sugestiva)', 'Tuberculose(Lesão Sugestiva)'),
         ('Linfadenite', 'Linfadenite'),
         ('Adenite', 'Adenite'),
-        ('Parasitoses transmissiveis', 'Parasitoses transmissiveis'),
+        ('Parasitoses', 'Parasitoses'),
         ('Esofagostomose', 'Esofagostomose'),
         ('Neoplasia', 'Neoplasia'),
     ]
-    
+
     GLANDULA_MAMARIA_CHOICES = [
         ('Aprovado', 'Aprovado'),
         ('Adenite', 'Adenite'),
@@ -187,29 +185,28 @@ class Bovino(models.Model):
     )
     data_avaliacao = models.DateTimeField(null=True, blank=True)
     
-    # Detalhes da avaliação - Vísceras Vermelhas
-    condicao_geral = models.CharField(max_length=50, blank=True, null=True)
+    # Detalhes da avaliação - Vísceras Vermelhas (todos obrigatórios)
+    condicao_geral = models.CharField(max_length=50, choices=CONDICAO_GERAL_CHOICES, default='Aprovado')
     carcassa = models.CharField(
         max_length=50,
         choices=CARCASSA_CHOICES,
-        blank=True,
-        null=True,
+        default='Aprovado',
         verbose_name="Carcaça"
     )
-    figado = models.CharField(max_length=50, blank=True, null=True)
-    coracao = models.CharField(max_length=50, blank=True, null=True)
-    pulmoes = models.CharField(max_length=50, blank=True, null=True)
-    rins = models.CharField(max_length=50, blank=True, null=True)
-    diafragma = models.CharField(max_length=50, blank=True, null=True)
-    lingua = models.CharField(max_length=50, blank=True, null=True)
-    cabeca = models.CharField(max_length=50, blank=True, null=True)
-    
-    # Detalhes da avaliação - Vísceras Brancas
-    utero = models.CharField(max_length=50, blank=True, null=True)
-    baco_pancreas = models.CharField(max_length=50, blank=True, null=True)
-    intestino_estomagos_bexiga = models.CharField(max_length=50, blank=True, null=True)
-    glandula_mamaria = models.CharField(max_length=50, blank=True, null=True)
-    
+    figado = models.CharField(max_length=50, choices=FIGADO_CHOICES, default='Aprovado')
+    coracao = models.CharField(max_length=50, choices=CORACAO_CHOICES, default='Aprovado')
+    pulmoes = models.CharField(max_length=50, choices=PULMOES_CHOICES, default='Aprovado')
+    rins = models.CharField(max_length=50, choices=RINS_CHOICES, default='Aprovado')
+    diafragma = models.CharField(max_length=50, choices=DIAFRAGMA_CHOICES, default='Aprovado')
+    lingua = models.CharField(max_length=50, choices=LINGUA_CHOICES, default='Aprovado')
+    cabeca = models.CharField(max_length=50, choices=CABECA_CHOICES, default='Aprovado')
+
+    # Detalhes da avaliação - Vísceras Brancas (todos obrigatórios)
+    utero = models.CharField(max_length=50, choices=UTERO_CHOICES, default='Aprovado')
+    baco_pancreas = models.CharField(max_length=50, choices=BAÇO_PANCREAS_CHOICES, default='Aprovado')
+    intestino_estomagos_bexiga = models.CharField(max_length=50, choices=INTESTINO_ESTOMAGOS_BEXIGA_CHOICES, default='Aprovado')
+    glandula_mamaria = models.CharField(max_length=50, choices=GLANDULA_MAMARIA_CHOICES, default='Aprovado')
+
     observacoes_avaliacao = models.TextField(blank=True, null=True)
     
     # Campos de classificação
