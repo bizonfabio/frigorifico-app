@@ -12,6 +12,8 @@
             <div class="card-body">
                 <div class="alert alert-info">
                     <strong>GTA:</strong> {{ gta }} | 
+                    <strong>Produtor:</strong> {{ nome_produtor }} |
+                    <strong>Data de Abate:</strong> {{ data_abate }} |
                     <strong>Quantidade de Animais:</strong> {{ quantidade }}
                 </div>
                 
@@ -50,8 +52,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="nome_produtor_{{ i }}" class="form-label">Nome do Produtor:</label>
-                                        <input type="text" class="form-control" id="nome_produtor_{{ i }}" name="nome_produtor_{{ i }}" required>
+                                        <label class="form-label">Nome do Produtor:</label>
+                                        <input type="text" class="form-control" value="{{ nome_produtor }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -69,8 +71,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="data_abate_{{ i }}" class="form-label">Data de Abate:</label>
-                                        <input type="date" class="form-control" id="data_abate_{{ i }}" name="data_abate_{{ i }}" required>
+                                        <label class="form-label">Data de Abate:</label>
+                                        <input type="date" class="form-control" value="{{ data_abate }}" readonly>
                                     </div>
                                 </div>
                             </div>

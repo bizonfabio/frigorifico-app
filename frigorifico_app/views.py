@@ -44,11 +44,22 @@ def registro_inicial(request):
 @login_required
 def registrar_gta(request):
     if request.method == 'POST':
-        gta = request.POST.get('gta')
-        quantidade = int(request.POST.get('quantidade'))
-        
+        gta = request.POST.get('gta', '').strip()
+        nome_produtor = request.POST.get('nome_produtor', '').strip()
+        data_abate = request.POST.get('data_abate', '').strip()
+        try:
+            quantidade = int(request.POST.get('quantidade'))
+        except (TypeError, ValueError):
+            quantidade = 0
+
+        if not gta or not nome_produtor or not data_abate or quantidade <= 0:
+            messages.error(request, 'Preencha GTA, nome do produtor, data de abate e quantidade corretamente.')
+            return render(request, 'frigorifico_app/registrar_gta.html')
+
         # Salvar os dados em sessão para uso na próxima etapa
         request.session['gta'] = gta
+        request.session['nome_produtor'] = nome_produtor
+        request.session['data_abate'] = data_abate
         request.session['quantidade'] = quantidade
         
         # Redirecionar para a página de registro dos animais
@@ -63,9 +74,11 @@ def registrar_animais(request):
         # Pegar dados do formulário
         quantidade = request.session.get('quantidade', 0)
         gta = request.session.get('gta', '')
+        nome_produtor = request.session.get('nome_produtor', '')
+        data_abate = request.session.get('data_abate', '')
         
         # Verificar se temos os dados necessários
-        if not gta or quantidade <= 0:
+        if not gta or not nome_produtor or not data_abate or quantidade <= 0:
             messages.error(request, 'Dados inválidos. Por favor, comece novamente.')
             return redirect('registro_inicial')
         
@@ -77,13 +90,8 @@ def registrar_animais(request):
         # Processar cada animal
         for i in range(quantidade):
             numero_brinco = request.POST.get(f'numero_brinco_{i}')
-            nome_produtor = request.POST.get(f'nome_produtor_{i}')
             sexo = request.POST.get(f'sexo_{i}')
-            data_abate = request.POST.get(f'data_abate_{i}')
-            
-            # Guardar a data de abate do primeiro animal como referência
-            if i == 0:
-                data_abate_referencia = data_abate
+            data_abate_referencia = data_abate
             
             # Criar instância do modelo Bovino
             bovino = Bovino(
@@ -125,6 +133,8 @@ def registrar_animais(request):
         # (flush() remove a sessão inteira e desloga o usuário)
         request.session.pop('gta', None)
         request.session.pop('quantidade', None)
+        request.session.pop('nome_produtor', None)
+        request.session.pop('data_abate', None)
         
         # Mostrar mensagens apropriadas
         if animais_registrados > 0:
@@ -148,14 +158,18 @@ def registrar_animais(request):
     
     # Método GET - mostrar formulário
     gta = request.session.get('gta', '')
+    nome_produtor = request.session.get('nome_produtor', '')
+    data_abate = request.session.get('data_abate', '')
     quantidade = request.session.get('quantidade', 0)
     
     # Verificar se temos os dados necessários
-    if not gta or quantidade <= 0:
+    if not gta or not nome_produtor or not data_abate or quantidade <= 0:
         return redirect('registro_inicial')
     
     contexto = {
         'gta': gta,
+        'nome_produtor': nome_produtor,
+        'data_abate': data_abate,
         'quantidade': quantidade,
         'range_quantidade': range(quantidade)
     }

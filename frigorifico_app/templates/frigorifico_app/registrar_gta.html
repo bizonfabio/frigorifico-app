@@ -17,7 +17,22 @@
                         <input type="text" class="form-control" id="gta" name="gta" required>
                         <div class="form-text">Informe o número do Guia de Trânsito Animal (GTA)</div>
                     </div>
-                    
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nome_produtor" class="form-label">Nome do Produtor:</label>
+                                <input type="text" class="form-control" id="nome_produtor" name="nome_produtor" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_abate" class="form-label">Data de Abate:</label>
+                                <input type="date" class="form-control" id="data_abate" name="data_abate" required>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="quantidade" class="form-label">Quantidade de Animais:</label>
                         <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" required>
@@ -37,6 +52,8 @@
                 <p>Antes de registrar os animais, você precisa informar:</p>
                 <ul>
                     <li>O número do GTA (Guia de Trânsito Animal)</li>
+                    <li>O nome do produtor</li>
+                    <li>A data de abate</li>
                     <li>A quantidade de animais que deseja registrar</li>
                 </ul>
                 <p>Após preencher essas informações, você será direcionado para o formulário de registro dos animais.</p>
