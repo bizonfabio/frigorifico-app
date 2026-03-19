@@ -58,3 +58,32 @@ Ou use um `.env` na raiz com `DATABASE_URL` e rode `.\Scripts\python.exe manage.
 | Admin sem CSS | WhiteNoise já está em uso; confira logs em `/static/`. |
 
 Logs: Vercel → projeto → último deploy → **Building** / **Functions**.
+
+## 6. Deploy automático com GitHub Actions
+
+Foi criado o workflow:
+
+- `.github/workflows/deploy-prod.yml`
+
+Fluxo:
+
+1. Em push na `main`, roda `python manage.py migrate` no banco do Supabase.
+2. Se migração passar, dispara deploy no Vercel via Deploy Hook.
+
+### Secrets necessários no GitHub
+
+No repositório GitHub: **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+| Secret | Valor |
+|--------|-------|
+| `SUPABASE_DATABASE_URL` | URL de conexão do Supabase (pooler, ex.: porta 6543) |
+| `DJANGO_SECRET_KEY` | mesma `SECRET_KEY` usada em produção |
+| `VERCEL_DEPLOY_HOOK_URL` | URL do Deploy Hook do Vercel |
+
+### Como criar o Deploy Hook no Vercel
+
+1. Vercel → projeto → **Settings** → **Git**.
+2. Em **Deploy Hooks**, crie um hook para branch `main`.
+3. Copie a URL gerada e salve em `VERCEL_DEPLOY_HOOK_URL` no GitHub.
+
+Observação: a URL de banco do GitHub (`SUPABASE_DATABASE_URL`) deve apontar para o mesmo banco usado no Vercel para manter schema e app sincronizados.
