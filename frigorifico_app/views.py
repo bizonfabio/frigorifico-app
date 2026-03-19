@@ -276,11 +276,16 @@ def avaliar_animal(request, id):
 
 @login_required
 def lista_animais_para_classificacao(request):
-    # Mostrar apenas animais que foram avaliados como aptos, ordenados pela ordem de abate
-    animais = Bovino.objects.filter(status_avaliacao='apto', tipo_animal__isnull=True).order_by('data_abate', 'ordem_abate')
-    
+    # Filtrar por data de abate (quando informada)
+    data_abate = request.GET.get('data_abate', '')
+    animais = Bovino.objects.filter(status_avaliacao='apto', tipo_animal__isnull=True)
+    if data_abate:
+        animais = animais.filter(data_abate=data_abate)
+    animais = animais.order_by('data_abate', 'ordem_abate')
+
     contexto = {
-        'animais': animais
+        'animais': animais,
+        'data_abate': data_abate,
     }
     
     return render(request, 'frigorifico_app/lista_animais_classificacao.html', contexto)
