@@ -212,6 +212,7 @@ class Bovino(models.Model):
     # Campos de classificação
     tipo_animal = models.CharField(max_length=20, choices=TIPO_ANIMAL_CHOICES, null=True, blank=True)
     qualidade = models.CharField(max_length=20, choices=QUALIDADE_CHOICES, null=True, blank=True)
+    peso = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     data_classificacao = models.DateTimeField(null=True, blank=True)
     
     # Ordem de abate

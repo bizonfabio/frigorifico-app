@@ -73,6 +73,23 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="peso" class="form-label">Peso do Animal (kg):</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="peso"
+                                    name="peso"
+                                    step="0.01"
+                                    min="0.01"
+                                    value="{{ animal.peso|default_if_none:'' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{% url 'lista_animais_para_classificacao' %}" class="btn btn-secondary">Cancelar</a>

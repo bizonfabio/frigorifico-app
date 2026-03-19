@@ -121,8 +121,10 @@ def registrar_animais(request):
                 animal.ordem_abate = max_ordem + i + 1
                 animal.save()
         
-        # Limpar a sessão
-        request.session.flush()
+        # Limpar apenas dados temporários do fluxo de cadastro
+        # (flush() remove a sessão inteira e desloga o usuário)
+        request.session.pop('gta', None)
+        request.session.pop('quantidade', None)
         
         # Mostrar mensagens apropriadas
         if animais_registrados > 0:
@@ -163,11 +165,16 @@ def registrar_animais(request):
 
 @login_required
 def lista_animais_para_avaliacao(request):
-    # Mostrar apenas animais que ainda não foram avaliados, ordenados pela ordem de abate
-    animais = Bovino.objects.filter(status_avaliacao='nao_avaliado').order_by('data_abate', 'ordem_abate')
-    
+    # Filtrar por data de abate (quando informada)
+    data_abate = request.GET.get('data_abate', '')
+    animais = Bovino.objects.filter(status_avaliacao='nao_avaliado')
+    if data_abate:
+        animais = animais.filter(data_abate=data_abate)
+    animais = animais.order_by('data_abate', 'ordem_abate')
+
     contexto = {
-        'animais': animais
+        'animais': animais,
+        'data_abate': data_abate,
     }
     
     return render(request, 'frigorifico_app/lista_animais_avaliacao.html', contexto)
@@ -278,6 +285,30 @@ def classificar_animal(request, id):
         # Salvar dados de classificação
         animal.tipo_animal = request.POST.get('tipo_animal')
         animal.qualidade = request.POST.get('qualidade')
+        peso_str = request.POST.get('peso')
+
+        if not animal.tipo_animal or not animal.qualidade or not peso_str:
+            messages.error(request, 'Tipo, qualidade e peso são obrigatórios para classificar o animal.')
+            contexto = {
+                'animal': animal,
+                'tipo_animal_choices': Bovino.TIPO_ANIMAL_CHOICES,
+                'qualidade_choices': Bovino.QUALIDADE_CHOICES
+            }
+            return render(request, 'frigorifico_app/classificar_animal.html', contexto)
+
+        try:
+            peso = Decimal(peso_str.replace(',', '.'))
+            if peso <= 0:
+                raise ValueError()
+            animal.peso = peso
+        except (ValueError, ArithmeticError):
+            messages.error(request, 'Informe um peso válido e maior que zero.')
+            contexto = {
+                'animal': animal,
+                'tipo_animal_choices': Bovino.TIPO_ANIMAL_CHOICES,
+                'qualidade_choices': Bovino.QUALIDADE_CHOICES
+            }
+            return render(request, 'frigorifico_app/classificar_animal.html', contexto)
         
         animal.data_classificacao = timezone.now()
         animal.save()
@@ -403,10 +434,10 @@ def enviar_para_estoque(request, id):
 
 @login_required
 def visualizar_estoque(request):
-    # Apenas meias carcaças que ainda ocupam o trilho (não foram dadas saída)
-    meias_carcaças = MeiaCarcaça.objects.filter(
-        data_saida_estoque__isnull=True
-    ).select_related('bovino').order_by('posicao_trilho', 'posicao_gancho')
+    # Exibir estoque completo (itens no trilho e itens já retirados)
+    meias_carcaças = MeiaCarcaça.objects.select_related('bovino').order_by(
+        'posicao_trilho', 'posicao_gancho', '-data_entrada_estoque'
+    )
     
     contexto = {
         'meias_carcaças': meias_carcaças

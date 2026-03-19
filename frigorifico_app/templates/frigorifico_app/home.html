@@ -44,15 +44,20 @@
             <table class="table table-modern table-sm">
                 <thead>
                     <tr>
+                        <th>Ordem</th>
                         <th>Brinco</th>
+                        <th>GTA</th>
                         <th>Produtor</th>
                         <th>Status</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for animal in animais|slice:":10" %}
                     <tr>
+                        <td>{{ animal.ordem_abate|default:"-" }}</td>
                         <td><a href="{% url 'detalhes_animal' animal.id %}" class="text-decoration-none">{{ animal.numero_brinco }}</a></td>
+                        <td>{{ animal.gta }}</td>
                         <td>{{ animal.nome_produtor }}</td>
                         <td>
                             {% if animal.status_avaliacao == 'nao_avaliado' %}
@@ -61,6 +66,13 @@
                                 <span class="badge badge-success">Apto</span>
                             {% else %}
                                 <span class="badge badge-danger">Inapto</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if animal.status_avaliacao == 'nao_avaliado' %}
+                                <a href="{% url 'avaliar_animal' animal.id %}" class="btn btn-sm btn-primary">Avaliar</a>
+                            {% else %}
+                                <a href="{% url 'detalhes_animal' animal.id %}" class="btn btn-sm btn-outline-secondary">Ver</a>
                             {% endif %}
                         </td>
                     </tr>
