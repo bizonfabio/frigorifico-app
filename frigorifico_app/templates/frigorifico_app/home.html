@@ -49,7 +49,7 @@
                         <th>GTA</th>
                         <th>Produtor</th>
                         <th>Status</th>
-                        <th>Ação</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,7 +68,13 @@
                                 <span class="badge badge-danger">Inapto</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'editar_animal' animal.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <form method="post" action="{% url 'deletar_animal' animal.id %}" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este animal? Esta ação não pode ser desfeita.');">
+                                {% csrf_token %}
+                                <input type="hidden" name="data_retorno" value="{{ data_selecionada|date:'Y-m-d' }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                            </form>
                             {% if animal.status_avaliacao == 'nao_avaliado' %}
                                 <a href="{% url 'avaliar_animal' animal.id %}" class="btn btn-sm btn-primary">Avaliar</a>
                             {% else %}

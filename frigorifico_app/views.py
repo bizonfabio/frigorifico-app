@@ -25,7 +25,14 @@ def home(request):
         else:
             data_selecionada = date.today()
     else:
-        data_selecionada = date.today()
+        data_get = request.GET.get('data_selecionada')
+        if data_get:
+            try:
+                data_selecionada = date.fromisoformat(data_get)
+            except ValueError:
+                data_selecionada = date.today()
+        else:
+            data_selecionada = date.today()
     animais = Bovino.objects.filter(data_abate=data_selecionada).order_by('ordem_abate')
     total_animais = animais.count()
     contexto = {
@@ -710,6 +717,26 @@ def editar_animal(request, id):
             messages.error(request, 'Número de brinco já existe para outro animal.')
             return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
     return render(request, 'frigorifico_app/editar_animal.html', {'animal': animal})
+
+
+@login_required
+def deletar_animal(request, id):
+    """Remove o animal e registros relacionados (meias carcaças em cascata)."""
+    animal = get_object_or_404(Bovino, id=id)
+    if request.method != 'POST':
+        messages.error(request, 'Use o botão Excluir na lista para remover o animal.')
+        return redirect('home')
+    brinco = animal.numero_brinco
+    data_retorno = request.POST.get('data_retorno', '')
+    animal.delete()
+    messages.success(request, f'Animal {brinco} removido com sucesso.')
+    if data_retorno:
+        try:
+            date.fromisoformat(data_retorno)
+            return redirect(f"{reverse('home')}?data_selecionada={data_retorno}")
+        except ValueError:
+            pass
+    return redirect('home')
 
 
 @login_required
